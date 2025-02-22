@@ -10,7 +10,7 @@
 #include<iostream>
 #include<chrono>
 
-Particule::Particule(Vecteur &position, Vecteur &vitesse, float &masse, int &id, std::string &categorie):
+Particule::Particule(Vecteur &position, Vecteur vitesse, float masse, int id, std::string categorie):
 masse(masse), id(id), categorie(categorie) {
     this->position = position;
     this->vitesse = vitesse;

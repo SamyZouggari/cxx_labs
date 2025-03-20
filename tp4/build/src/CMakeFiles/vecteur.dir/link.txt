@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvecteur.a CMakeFiles/vecteur.dir/vecteur.cxx.o CMakeFiles/vecteur.dir/particule.cxx.o CMakeFiles/vecteur.dir/univers.cxx.o CMakeFiles/vecteur.dir/cellule.cxx.o
+/usr/bin/ranlib libvecteur.a

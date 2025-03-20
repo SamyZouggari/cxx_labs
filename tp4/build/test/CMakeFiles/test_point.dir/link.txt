@@ -1,0 +1,1 @@
+/usr/bin/c++ -pg CMakeFiles/test_point.dir/__/src/test_point.cxx.o -o test_point  ../src/libvecteur.a 

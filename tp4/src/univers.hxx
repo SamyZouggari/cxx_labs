@@ -5,6 +5,7 @@
 #include"vecteur.hxx"
 #include<vector>
 #include<cmath>
+#include<unordered_map>
 
 class Univers {
     private:
@@ -12,8 +13,9 @@ class Univers {
     int dim;
     Vecteur ld;
     float rcut;
-    int nc;
-    Cellule* cellules;
+    Vecteur nc;
+    std::unordered_map<int, Cellule> cellules;
+    Particule* particules;
 
     public:
     Univers(int dim, int nbParticules, float deb, float fin, Vecteur ld, float rcut);

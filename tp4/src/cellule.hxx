@@ -7,8 +7,6 @@
 
 class Cellule{
     private:
-    std::vector<Particule> particules;
-    //std::vector<Cellule> cellulesVoisines;
     Vecteur position;
     Vecteur taille;
 

@@ -1,6 +1,6 @@
 #include"cellule.hxx"
 
-Cellule::Cellule(const Vecteur &pos):position(pos){};
+Cellule::Cellule(const Vecteur &pos, const Vecteur &taille):position(pos), taille(taille)  {};
 
 Vecteur Cellule::getPosition() const{
     return position;

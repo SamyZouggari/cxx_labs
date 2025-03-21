@@ -66,7 +66,7 @@ void Univers::initParticulesRandom(){
         }
         else {
             // Sinon c'est que la cellule ne contient pas encore de particule
-            cellules.insert({positionAbsolue, Cellule(Vecteur(cellx, celly,cellz))});
+            cellules.insert({positionAbsolue, Cellule(Vecteur(cellx, celly,cellz), Vecteur(taillex, tailley, taillez))});
         }
     }
 }

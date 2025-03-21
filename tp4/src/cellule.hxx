@@ -11,7 +11,7 @@ class Cellule{
         Vecteur taille;
 
     public:
-        Cellule(const Vecteur &position);
+        Cellule(const Vecteur &position, const Vecteur &taille);
         Cellule();
         Vecteur getPosition() const;
         void addParticule(const Particule &p);

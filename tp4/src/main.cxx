@@ -6,6 +6,7 @@
 
 int main(){
     Univers u = Univers(3, 40, 0,10, Vecteur(20,20,20), 2.5);
-    u.displayUnivers();
+    u.initParticulesRandom();
+    u.display_univers();
     return 1;
 }

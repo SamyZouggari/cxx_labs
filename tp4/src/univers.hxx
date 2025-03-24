@@ -26,6 +26,7 @@ class Univers {
         std::vector<Cellule> getCellulesVoisines(const Cellule &c) const;
         void displayUnivers();
         void initParticulesRandom();
+        void display_univers();
         ~Univers(); 
 };
 

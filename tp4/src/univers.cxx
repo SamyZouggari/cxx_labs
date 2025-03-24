@@ -71,6 +71,14 @@ void Univers::initParticulesRandom(){
     }
 }
 
+void Univers::display_univers(){
+    for(int i =0 ; i< nbParticules; i++) {
+        std::cout << "id = " << particules[i].getId() << std::endl;
+        std::cout << "position = " << particules[i].getPosition() << std::endl;
+    }
+}
+
+
 Univers::~Univers() {
     free(particules);
 }

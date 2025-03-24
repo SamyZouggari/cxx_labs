@@ -28,6 +28,7 @@ class Univers {
         void initParticulesRandom();
         void display_particules();
         void display_cellules();
+        void display_univers();
         ~Univers(); 
 };
 

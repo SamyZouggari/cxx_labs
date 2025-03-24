@@ -23,15 +23,15 @@ void Univers::initParticulesRandom(){
     std::uniform_real_distribution<> disy(0, fin.getY());
     std::uniform_real_distribution<> disz(0, fin.getZ());
 
-    //création des particules
-    for (int i=0 ; i<nbParticules ; i++){
-        float x = disx(gen);
-        float y = disy(gen);
-        float z = disz(gen);
-        Vecteur v = Vecteur(x,y,z);
-        Particule p = Particule(v, Vecteur(1.0,1.0,0.0), 1.0,i,"particule");
-        particules[i] = p;
-    }
+    // //création des particules
+    // for (int i=0 ; i<nbParticules ; i++){
+    //     float x = disx(gen);
+    //     float y = disy(gen);
+    //     float z = disz(gen);
+    //     Vecteur v = Vecteur(x,y,z);
+    //     Particule p = Particule(v, Vecteur(1.0,1.0,0.0), 1.0,i,"particule");
+    //     particules[i] = p;
+    // }
     
     for (int i=0 ; i<nbParticules ; i++){
         float x = disx(gen);
@@ -79,12 +79,11 @@ void Univers::display_particules(){
 }
 
 void Univers::display_cellules(){
-    for(auto it = cellules.begin(); it != cellules.cend(); ++it) {
+    for (auto it = cellules.begin(); it != cellules.cend(); ++it) {
         std::cout << "Cellule position " << (*it).first << std::endl;
         std::cout << "Vec pos" << (*it).second.getPosition() << std::endl;
     }
 }
-
 
 Univers::~Univers() {
     free(particules);

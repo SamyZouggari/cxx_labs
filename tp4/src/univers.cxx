@@ -71,10 +71,17 @@ void Univers::initParticulesRandom(){
     }
 }
 
-void Univers::display_univers(){
+void Univers::display_particules(){
     for(int i =0 ; i< nbParticules; i++) {
         std::cout << "id = " << particules[i].getId() << std::endl;
         std::cout << "position = " << particules[i].getPosition() << std::endl;
+    }
+}
+
+void Univers::display_cellules(){
+    for(auto it = cellules.begin(); it != cellules.cend(); ++it) {
+        std::cout << "Cellule position " << (*it).first << std::endl;
+        std::cout << "Vec pos" << (*it).second.getPosition() << std::endl;
     }
 }
 

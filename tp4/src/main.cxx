@@ -5,8 +5,8 @@
 
 
 int main(){
-    Univers u = Univers(3, 40, 0,10, Vecteur(20,20,20), 2.5);
+    Univers u = Univers(3, 2, 0,10, Vecteur(5,5,5), 2.5);
     u.initParticulesRandom();
-    u.display_univers();
+    u.display_cellules();
     return 1;
 }

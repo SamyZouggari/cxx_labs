@@ -2,10 +2,12 @@
 #include<random>
 #include<vector>
 #include<algorithm>
+#include <cassert>
 
 Univers::Univers(int dim, int nbParticules, Vecteur ld, float rcut):
     dim(dim), nbParticules(nbParticules), ld(ld), rcut(rcut)
     {
+        assert(dim >= 1 && dim <= 3 && "Dimension invalide !");
         // On caclule le nombre de cellule pour chaque direction
         nc = Vecteur(floor(ld[0]/rcut), floor(ld[1]/rcut), floor(ld[2]/rcut));
         //Allocation de l'espace pour stocker les particules
@@ -41,9 +43,9 @@ void Univers::initParticulesRandom(){
         int taillez = ld.getZ()/nc.getZ();
 
         // Nous permet de savoir où se positionne la cellule dans notre univers
-        int cellx = floor(p.getPosition().getX() / taillex);
-        int celly = floor(p.getPosition().getY() / tailley);
-        int cellz = floor(p.getPosition().getY() / taillez);
+        int cellx = floor(p.getPosition().getX() / rcut);
+        int celly = floor(p.getPosition().getY() / rcut);
+        int cellz = floor(p.getPosition().getY() / rcut);
 
         //linéarisation du vecteur
         int positionAbsolue = cellx*nc[2]*nc[1] + celly*nc[2] + cellz;
@@ -138,4 +140,40 @@ std::vector<float> Univers::calcul_forces(){
         forces.push_back(somme);
     }
     return forces;
+}
+
+/**
+ * Création d'une fonction qui prend 2 particules en paramètre et qui va renvoyer
+ * si elles appartiennent à des cellules voisines ou non
+ * @param part1, part2 deux particules de l'univers
+ * @return true si les deux particules sont assez proches pour intéragit entre elles
+ * false sinon
+*/
+bool Univers::est_voisine(const Particule& part1, const Particule& part2) const{
+    // Partant des deux particules il nous faut retrouver la cellule à laquelle elles appartiennt
+    // On retrouve à partir de la particule les coordonnées de sa cellule
+    int cell1x = floor(part1.getPosition().getX() / rcut);
+    int cell1y = floor(part1.getPosition().getY() / rcut);
+    int cell1z = floor(part1.getPosition().getY() / rcut);
+
+    int cell2x = floor(part2.getPosition().getX() / rcut);
+    int cell2y = floor(part2.getPosition().getY() / rcut);
+    int cell2z = floor(part2.getPosition().getY() / rcut);
+
+    Vecteur posCell1 = Vecteur(cell1x, cell1y, cell1z);
+    Vecteur posCell2 = Vecteur(cell2x, cell2y, cell2z);
+
+    if (dim == 1) {
+        // dans un univers en 1 dimension les voisins sont simplement la cellule elle
+        // même, celle d'avant et celle d'après
+        return (abs(int(posCell1.getX()) - int(posCell2.getX())) <= 1);
+    } else if (dim == 2)
+    {
+        return ((abs(posCell1.getX() - posCell2.getX()) <= 1) && (abs(posCell1.getY() - posCell2.getY() <= 1)));
+    } else if (dim == 3)
+    {
+        /* code */
+        return ( (abs(posCell1.getX() - posCell2.getX()) <= 1) && (abs(posCell1.getY() - posCell2.getY() <= 1)) && (abs(posCell1.getZ() - posCell2.getZ() <= 1)));
+    }
+    return false;    
 }

@@ -33,5 +33,6 @@ class Univers {
         std::vector<float> calcul_forces();
         void stromer_verlet(std::vector<float> f_old, float dt, float tend);
         std::vector<Vecteur> posVoisines(Vecteur);
+        bool est_voisine(const Particule &part1, const Particule &part2) const;
 };
 

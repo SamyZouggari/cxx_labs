@@ -14,7 +14,7 @@ class Particule {
     float getMasse() const;
     float calculateDistance(const Particule other);
     std::string getCategorie() const;
-
+    Vecteur vecteurCylindrique(const Particule &p2) const;
     private:
     Vecteur position;
     Vecteur vitesse;

@@ -9,6 +9,7 @@
 #include<random>
 #include<iostream>
 #include<chrono>
+#include<cmath>
 
 Particule::Particule(Vecteur &position, Vecteur vitesse, float masse, int id, std::string categorie):
 masse(masse), id(id), categorie(categorie) {
@@ -55,4 +56,25 @@ float Particule::calculateDistance(Particule other){
 
 std::string Particule::getCategorie() const {
     return categorie;
+}
+
+Vecteur Particule::vecteurCylindrique(const Particule &p2) const{
+    float x = p2.getPosition().getX() - getPosition().getX();
+    float y = p2.getPosition().getY() - getPosition().getY();
+    float z = p2.getPosition().getZ() - getPosition().getZ();
+
+    float r = sqrt(pow(x,2) + pow(y,2));
+    float theta;
+    if (x!=0){
+        theta = atan(y/x);
+    }
+    else {
+        if(y>0){
+            theta = M_PI/2;
+        }
+        else{
+            theta = -M_PI/2;
+        }
+    }
+    Vecteur(r,theta,z);
 }

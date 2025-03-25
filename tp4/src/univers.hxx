@@ -21,7 +21,7 @@ class Univers {
         Particule* particules; // Il nous faut quand même stocker l'ensemble des particules pour des questions de facilité
 
     public:
-        Univers(int dim, int nbParticules, float deb, float fin, Vecteur ld, float rcut);
+        Univers(int dim, int nbParticules, Vecteur ld, float rcut);
         Cellule getCellule(const Vecteur &p) const;
         std::vector<Cellule> getCellulesVoisines(const Cellule &c) const;
         void displayUnivers();
@@ -29,6 +29,9 @@ class Univers {
         void display_particules();
         void display_cellules();
         void display_univers();
-        ~Univers(); 
+        ~Univers();
+        std::vector<float> calcul_forces();
+        void stromer_verlet(std::vector<float> f_old, float dt, float tend);
+        std::vector<Vecteur> posVoisines(Vecteur);
 };
 

@@ -5,7 +5,7 @@
 
 
 int main(){
-    Univers u = Univers(3, 10, 0,10, Vecteur(5,5,5), 2.5);
+    Univers u = Univers(3, 50, Vecteur(50,50,50), 5);
     std::cout << "Création des particules dans l'univers" << std::endl;
     u.initParticulesRandom();
     std::cout << "\nAffichage des particules" << std::endl;

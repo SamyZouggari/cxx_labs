@@ -16,6 +16,15 @@ masse(masse), id(id), categorie(categorie) {
     this->vitesse = vitesse;
 }
 
+Particule::Particule()
+{
+    position = Vecteur(0,0,0);
+    vitesse = Vecteur(0,0,0);
+    masse=0;
+    id=0;
+    categorie="defaut";
+}
+
 int Particule::getId() const{
     return id;
 }

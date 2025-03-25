@@ -2,10 +2,12 @@
 #include<random>
 #include<vector>
 #include<algorithm>
+#include <cassert>
 
 Univers::Univers(int dim, int nbParticules, Vecteur ld, float rcut):
     dim(dim), nbParticules(nbParticules), ld(ld), rcut(rcut)
     {
+        assert(dim >= 1 && dim <= 3 && "Dimension invalide !");
         // On caclule le nombre de cellule pour chaque direction
         nc = Vecteur(floor(ld[0]/rcut), floor(ld[1]/rcut), floor(ld[2]/rcut));
         //Allocation de l'espace pour stocker les particules
@@ -152,71 +154,38 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
     return forces;
 }
 
-// std::vector<Vecteur> Univers::getCellulesVoisines(const Cellule &c) const{
-//     std::vector<Cellule> voisins;
-//     Vecteur pos = c.getPosition();
-//     int nc0 = (int) nc.getX();
-//     int nc1 = (int) nc.getY();
-//     int nc2 = (int) nc.getZ();
-//     int pos0 = (int) pos[0];
-//     int pos1 = (int) pos[1];
-//     int pos2 = (int) pos[2];
+/**
+ * Création d'une fonction qui prend 2 particules en paramètre et qui va renvoyer
+ * si elles appartiennent à des cellules voisines ou non
+ * @param part1, part2 deux particules de l'univers
+ * @return true si les deux particules sont assez proches pour intéragit entre elles
+ * false sinon
+*/
+bool Univers::est_voisine(const Particule& part1, const Particule& part2) const{
+    // Partant des deux particules il nous faut retrouver la cellule à laquelle elles appartiennt
+    // On retrouve à partir de la particule les coordonnées de sa cellule
+    int cell1x = floor(part1.getPosition().getX() / rcut);
+    int cell1y = floor(part1.getPosition().getY() / rcut);
+    int cell1z = floor(part1.getPosition().getY() / rcut);
 
-//     // Cas 1D
-//     if(nc.getX() == 0 && nc.getY() == 0){
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, 0, 0)));
-//         voisins.push_back(c);  // L'ajout de la cellule elle-même comme voisin
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, 0, 0)));
-//     }
-//     // Cas 2D
-//     else if(nc.getX() == 0){
-//         voisins.push_back(c);  // La cellule elle-même comme voisin
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, pos1, 0)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, pos1, 0)));
-//         voisins.push_back(getCellule(Vecteur(pos0, pos1-1, 0)));
-//         voisins.push_back(getCellule(Vecteur(pos0, (pos1+1) % nc1, 0)));
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, (pos1-1+nc1)%nc1, 0)));
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, (pos1+1) % nc1, 0)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, (pos1+1) % nc1, 0)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, (pos1-1+nc1) % nc1, 0)));
-//     }
-//     // Cas 3D
-//     else {
-//         voisins.push_back(c);  // La cellule elle-même comme voisin
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, pos1, pos2)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, pos1, pos2)));
-//         voisins.push_back(getCellule(Vecteur(pos0, (pos1-1+nc1) % nc1, pos2)));
-//         voisins.push_back(getCellule(Vecteur(pos0, (pos1+1) % nc1, pos2)));
-//         voisins.push_back(getCellule(Vecteur(pos0, pos1, (pos2-1+nc2) % nc2)));
-//         voisins.push_back(getCellule(Vecteur(pos0, pos1, (pos2+1) % nc2)));
+    int cell2x = floor(part2.getPosition().getX() / rcut);
+    int cell2y = floor(part2.getPosition().getY() / rcut);
+    int cell2z = floor(part2.getPosition().getY() / rcut);
 
-//         // Diagonales dans le plan XY
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, (pos1-1+nc1) % nc1, pos2)));
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, (pos1+1) % nc1, pos2)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, (pos1-1+nc1) % nc1, pos2)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, (pos1+1) % nc1, pos2)));
+    Vecteur posCell1 = Vecteur(cell1x, cell1y, cell1z);
+    Vecteur posCell2 = Vecteur(cell2x, cell2y, cell2z);
 
-//         // Diagonales dans le plan XZ
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, pos1, (pos2-1+nc2) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, pos1, (pos2+1) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, pos1, (pos2-1+nc2) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, pos1, (pos2+1) % nc2)));
-
-//         // Diagonales dans le plan YZ
-//         voisins.push_back(getCellule(Vecteur(pos0, (pos1-1+nc1) % nc1, (pos2-1+nc2) % nc2)));
-//         voisins.push_back(getCellule(Vecteur(pos0, (pos1-1+nc1) % nc1, (pos2+1) % nc2)));
-//         voisins.push_back(getCellule(Vecteur(pos0, (pos1+1) % nc1, (pos2-1+nc2) % nc2)));
-//         voisins.push_back(getCellule(Vecteur(pos0, (pos1+1) % nc1, (pos2+1) % nc2)));
-
-//         // Diagonales dans l'espace 3D
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, (pos1-1+nc1) % nc1, (pos2-1+nc2) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, (pos1-1+nc1) % nc1, (pos2+1) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, (pos1+1) % nc1, (pos2-1+nc2) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0-1+nc0) % nc0, (pos1+1) % nc1, (pos2+1) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, (pos1-1+nc1) % nc1, (pos2-1+nc2) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, (pos1-1+nc1) % nc1, (pos2+1) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, (pos1+1) % nc1, (pos2-1+nc2) % nc2)));
-//         voisins.push_back(getCellule(Vecteur((pos0+1) % nc0, (pos1+1) % nc1, (pos2+1) % nc2)));
-//     }
-//     return voisins;
-// }
+    if (dim == 1) {
+        // dans un univers en 1 dimension les voisins sont simplement la cellule elle
+        // même, celle d'avant et celle d'après
+        return (abs(int(posCell1.getX()) - int(posCell2.getX())) <= 1);
+    } else if (dim == 2)
+    {
+        return ((abs(posCell1.getX() - posCell2.getX()) <= 1) && (abs(posCell1.getY() - posCell2.getY() <= 1)));
+    } else if (dim == 3)
+    {
+        /* code */
+        return ( (abs(posCell1.getX() - posCell2.getX()) <= 1) && (abs(posCell1.getY() - posCell2.getY() <= 1)) && (abs(posCell1.getZ() - posCell2.getZ() <= 1)));
+    }
+    return false;
+}

@@ -24,9 +24,11 @@ class Univers {
         Univers(int dim, int nbParticules, Vecteur ld, float rcut);
         Cellule getCellule(const Vecteur &p) const;
         std::vector<Cellule> getCellulesVoisines(const Cellule &c) const;
+        void displayUnivers();
         void initParticulesRandom();
         void display_particules();
         void display_cellules();
+        void display_univers();
         ~Univers();
         std::vector<Vecteur> calcul_forces(float epsilon, float sigma);
         bool est_voisine(const Particule &p1,const Particule &p2) const;

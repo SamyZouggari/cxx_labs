@@ -17,7 +17,7 @@ class Univers {
         // Un dictionnaire pour stocker les cellules de notre univers
         // La clefs : Linéarison des coordonnées de la cellule
         // la valeurs : la cellule
-        std::unordered_map<int, Cellule> cellules;
+        std::unordered_map<int, std::pair<Cellule, int>> cellules;
         Particule* particules; // Il nous faut quand même stocker l'ensemble des particules pour des questions de facilité
 
     public:
@@ -32,7 +32,7 @@ class Univers {
         ~Univers();
         std::vector<Vecteur> calcul_forces(float epsilon, float sigma);
         bool est_voisine(const Particule &p1,const Particule &p2) const;
-        void stromer_verlet(std::vector<float> f_old, float dt, float tend, float epsilon, float sigma);
+        void stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma);
         // std::vector<Vecteur> posVoisines(Vecteur);
 };
 

@@ -50,17 +50,18 @@ void Univers::initParticulesRandom(){
         //linéarisation du vecteur
         int positionAbsolue = cellx*nc[2]*nc[1] + celly*nc[2] + cellz;
 
-
+        int nb_Cellule=0;
         auto it = cellules.find(positionAbsolue);
         if(it !=cellules.end()){
-            continue; //ne fais rien s'il y a déjà la cellule contenant la particule
+             //ne fais rien s'il y a déjà la cellule contenant la particule
             // Si on a déjà vu cette clef, c'est que le cellule contient déjà une ou plusieurs particules
+            it->second.second++;
 
-            //it->second.addParticule(p); // Est-ce que c'est vraiment utile qu'une Cellule soit au courant des Particules qu'elle contient ???
+             // Est-ce que c'est vraiment utile qu'une Cellule soit au courant des Particules qu'elle contient ???
         }
         else {
             // Sinon c'est que la cellule ne contient pas encore de particule
-            cellules.insert({positionAbsolue, Cellule(Vecteur(cellx, celly,cellz), Vecteur(taillex, tailley, taillez))});
+            cellules.insert({positionAbsolue, {Cellule(Vecteur(cellx, celly,cellz), Vecteur(taillex, tailley, taillez)), 1}});
         }
     }
 }
@@ -75,7 +76,7 @@ void Univers::display_particules(){
 void Univers::display_cellules(){
     for (auto it = cellules.begin(); it != cellules.cend(); ++it) {
         std::cout << "Cellule position " << (*it).first << std::endl;
-        std::cout << "Vec pos" << (*it).second.getPosition() << std::endl;
+        std::cout << "Vec pos" << (*it).second.first.getPosition() <<"number of particules = " << (*it).second.second << std::endl;
     }
 }
 
@@ -83,7 +84,7 @@ Univers::~Univers() {
     delete [] particules;
 }
 
-void Univers::stromer_verlet(std::vector<float> f_old, float dt, float tend, float epsilon, float sigma){
+void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma){
     std::vector<Vecteur> F = calcul_forces(epsilon,sigma);
     float t = 0;
     float x=0;
@@ -143,14 +144,17 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
                 propy = r.getY()/sumr;
                 propz = r.getZ()/sumr;
                 //if(dist>1e-5){ // je l'ai mis au tp2 car j'avais des nan quand la distance etait trop petite
-                float force_scalaire = (1/pow(dist,2) * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
-                force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
+                if(dist>1e-5){
+                    float force_scalaire = (1/dist * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
+                    force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
+                }
                 //}
             }
             sommeForce_i+=force_i_j;
         }
         forces.push_back(sommeForce_i);
     }
+    display_particules();
     return forces;
 }
 

@@ -34,5 +34,6 @@ class Univers {
         bool est_voisine(const Particule &p1,const Particule &p2) const;
         void stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma);
         // std::vector<Vecteur> posVoisines(Vecteur);
+        void check_part(const Particule& p, const Vecteur& v);
 };
 

@@ -102,6 +102,7 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
             y = (p.getPosition()[1] + (p.getVitesse()[1] + (0.5/p.getMasse())*(*it).getY()*dt)*dt);
             z = (p.getPosition()[2] + (p.getVitesse()[2] + (0.5/p.getMasse())*(*it).getZ()*dt)*dt);
             Vecteur v = Vecteur (x,y,z);
+            //ICI
             p.setPosition(v);
             std::advance(it,1);
         }
@@ -192,4 +193,59 @@ bool Univers::est_voisine(const Particule& part1, const Particule& part2) const{
         return ( (abs(posCell1.getX() - posCell2.getX()) <= 1) && (abs(posCell1.getY() - posCell2.getY() <= 1)) && (abs(posCell1.getZ() - posCell2.getZ() <= 1)));
     }
     return false;
+}
+
+/**
+ * Méthode qui va être appelé une fois qu'on a calculé la nouvelle position d'une
+ * particule, et qui va permettre de mettre à jour notre Map de cellule. 
+ * @param p la particule avant son mouvement, pour retrouver à quelle cellule elle appartient
+ * @param v nouveau vecteur position de la particule p, pour voir dans quelle cellule la particule va bouger
+*/
+void Univers::check_part(const Particule& p, const Vecteur& v) {
+    // On doit trouver la position de la cellule qui contient p
+    int cellx0 = floor(p.getPosition().getX() / rcut);
+    int celly0 = floor(p.getPosition().getY() / rcut);
+    int cellz0 = floor(p.getPosition().getY() / rcut);
+
+    Vecteur old_cellule = Vecteur(cellx0,celly0,cellz0);
+    int key_old_cellule = cellx0*nc[2]*nc[1] + celly0*nc[2] + cellz0;
+
+    // On doit calculer la cellule qui contiendra la particule après mouvement
+    int cellx1 = floor(v.getX()/rcut);
+    int celly1 = floor(v.getY()/rcut);
+    int cellz1 = floor(v.getZ()/rcut);
+
+    Vecteur new_cellule = Vecteur(cellx1,celly1,cellz1);
+    int key_new_cellule = cellx1*nc[2]*nc[1] + celly1*nc[2] + cellz1;
+
+    //maintenant on regarde si après mouvement la particule aura changé de cellule
+    if (old_cellule != new_cellule){
+        // Si les cellules sont différentes, il va falloir décrémenter le nombre de particules de l'ancienne cellule
+        auto it = cellules.find(key_old_cellule);
+        if (it != cellules.end()) {
+            it->second.second--;
+            // cellules[key_old_cellule].second -= 1;
+            // On verifie maintenant qu'il y ait encore des particules dans l'ancienne cellule, sinon on la supprime
+            if (it->second.second == 0) {
+                // cellules.erase(key_old_cellule);
+                cellules.erase(it);
+            }
+        }
+
+        // Ensuite il va falloir incrémenter le nombre de particule dans la nouvelle cellule, ou la créer au besoin
+        auto it = cellules.find(key_new_cellule);
+        if (it != cellules.end()) {
+            // Si la cellule existe déjà dans le map, on n'a qu'à incrémenter le compteur
+            // cellules[key_new_cellule].second += 1;
+            it->second.second++;
+        } else {
+            // Si la cellule n'existe pas encore dans le map il faut la créer
+            // Taille de la cellule dans chaque direction de l'espace
+            int taillex = floor(ld.getX()/nc.getX());
+            int tailley = floor(ld.getY()/nc.getY());
+            int taillez = floor(ld.getZ()/nc.getZ());
+            cellules.insert({key_new_cellule, {Cellule(new_cellule, Vecteur(taillex, tailley, taillez)), 1}});
+        }
+    }
+    // Si on est par rentré dans le if c'est que la particule est toujours dans la même cellule même après son mouvement donc on ne fait rien
 }

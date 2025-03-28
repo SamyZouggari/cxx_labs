@@ -233,11 +233,11 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
         }
 
         // Ensuite il va falloir incrémenter le nombre de particule dans la nouvelle cellule, ou la créer au besoin
-        auto it = cellules.find(key_new_cellule);
-        if (it != cellules.end()) {
+        auto ite = cellules.find(key_new_cellule);
+        if (ite != cellules.end()) {
             // Si la cellule existe déjà dans le map, on n'a qu'à incrémenter le compteur
             // cellules[key_new_cellule].second += 1;
-            it->second.second++;
+            ite->second.second++;
         } else {
             // Si la cellule n'existe pas encore dans le map il faut la créer
             // Taille de la cellule dans chaque direction de l'espace

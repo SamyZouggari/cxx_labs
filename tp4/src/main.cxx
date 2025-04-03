@@ -2,6 +2,8 @@
 #include"vecteur.hxx"
 #include"cellule.hxx"
 #include"particule.hxx"
+#include<iostream>
+#include<fstream>
 
 
 int main(){
@@ -14,8 +16,9 @@ int main(){
     u.display_particules();
     std::cout << "\nAffichage des cellules découpant l'univers" << std::endl;
     u.display_cellules();
-    //std::vector<Vecteur> f_old = u.calcul_forces(epsilon, sigma);
-    //u.stromer_verlet(f_old, 0.15,10,1,1);
-    //u.display_particules();
+    std::vector<Vecteur> f_old = u.calcul_forces(epsilon, sigma);
+    u.stromer_verlet(f_old, 0.15,10,1,1,true);
+    u.display_particules();
     return 1;
 }
+

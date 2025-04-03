@@ -1,4 +1,5 @@
 #include"univers.hxx"
+#include"affichage.hxx"
 #include<random>
 #include<vector>
 #include<algorithm>
@@ -15,6 +16,17 @@ Univers::Univers(int dim, int nbParticules, Vecteur ld, float rcut):
         particules = new Particule[nbParticules];
     }
 
+int Univers::getNbParticules() const{
+    return nbParticules;
+}
+
+std::unordered_map<int, std::pair<Cellule, std::unordered_map<int,Particule>>> Univers::getCellules() const{
+    return cellules;
+}
+
+Particule* Univers::get_particules() const{
+    return particules;
+}
 
 
 // initialisation des particules
@@ -84,8 +96,9 @@ Univers::~Univers() {
     delete [] particules;
 }
 
-void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma){
+void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma, bool affichage){
     std::vector<Vecteur> F = calcul_forces(epsilon,sigma);
+    
     float t = 0;
     float x=0;
     float y=0;
@@ -93,6 +106,7 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
     float vx=0;
     float vy=0;
     float vz=0;
+    int counter_file=1; //compteur pour nommer les fichiers vtk
     while (t < tend) {
         t = t + dt;
         auto it = F.begin();
@@ -120,6 +134,11 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
             std::advance(itF,1);
             std::advance(itF_old,1);
         }
+    }
+    
+    if (affichage){
+        Affichage affichage = Affichage(*this);
+        affichage.create_vtk("../simulation/simu"+std::to_string(counter_file)+".vtu");
     }
 }
 

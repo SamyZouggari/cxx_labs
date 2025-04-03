@@ -23,6 +23,9 @@ class Univers {
     public:
         Univers(int dim, int nbParticules, Vecteur ld, float rcut);
         Cellule getCellule(const Vecteur &p) const;
+        Particule* get_particules() const;
+        int getNbParticules() const;
+        std::unordered_map<int, std::pair<Cellule, std::unordered_map<int,Particule>>> getCellules() const;
         std::vector<Cellule> getCellulesVoisines(const Cellule &c) const;
         void displayUnivers();
         void initParticulesRandom();
@@ -32,7 +35,7 @@ class Univers {
         ~Univers();
         std::vector<Vecteur> calcul_forces(float epsilon, float sigma);
         bool est_voisine(const Particule &p1,const Particule &p2) const;
-        void stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma);
+        void stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma, bool affichage);
         // std::vector<Vecteur> posVoisines(Vecteur);
         void check_part(const Particule& p, const Vecteur& v);
 };

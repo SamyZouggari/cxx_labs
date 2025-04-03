@@ -58,23 +58,23 @@ std::string Particule::getCategorie() const {
     return categorie;
 }
 
-Vecteur Particule::vecteurCylindrique(const Particule &p2) const{
-    float x = p2.getPosition().getX() - getPosition().getX();
-    float y = p2.getPosition().getY() - getPosition().getY();
-    float z = p2.getPosition().getZ() - getPosition().getZ();
+// Vecteur Particule::vecteurCylindrique(const Particule &p2) const{
+//     float x = p2.getPosition().getX() - getPosition().getX();
+//     float y = p2.getPosition().getY() - getPosition().getY();
+//     float z = p2.getPosition().getZ() - getPosition().getZ();
 
-    float r = sqrt(pow(x,2) + pow(y,2));
-    float theta;
-    if (x!=0){
-        theta = atan(y/x);
-    }
-    else {
-        if(y>0){
-            theta = M_PI/2;
-        }
-        else{
-            theta = -M_PI/2;
-        }
-    }
-    Vecteur(r,theta,z);
-}
+//     float r = sqrt(pow(x,2) + pow(y,2));
+//     float theta;
+//     if (x!=0){
+//         theta = atan(y/x);
+//     }
+//     else {
+//         if(y>0){
+//             theta = M_PI/2;
+//         }
+//         else{
+//             theta = -M_PI/2;
+//         }
+//     }
+//     Vecteur(r,theta,z);
+// }

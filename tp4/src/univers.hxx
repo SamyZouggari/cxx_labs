@@ -17,7 +17,7 @@ class Univers {
         // Un dictionnaire pour stocker les cellules de notre univers
         // La clefs : Linéarison des coordonnées de la cellule
         // la valeurs : la cellule
-        std::unordered_map<int, std::pair<Cellule, int>> cellules;
+        std::unordered_map<int, std::pair<Cellule, std::unordered_map<int,Particule>>> cellules;
         Particule* particules; // Il nous faut quand même stocker l'ensemble des particules pour des questions de facilité
 
     public:

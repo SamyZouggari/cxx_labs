@@ -55,13 +55,13 @@ void Univers::initParticulesRandom(){
         if(it !=cellules.end()){
              //ne fais rien s'il y a déjà la cellule contenant la particule
             // Si on a déjà vu cette clef, c'est que le cellule contient déjà une ou plusieurs particules
-            it->second.second++;
+            it->second.second[p.getId()]=p;
 
              // Est-ce que c'est vraiment utile qu'une Cellule soit au courant des Particules qu'elle contient ???
         }
         else {
             // Sinon c'est que la cellule ne contient pas encore de particule
-            cellules.insert({positionAbsolue, {Cellule(Vecteur(cellx, celly,cellz), Vecteur(taillex, tailley, taillez)), 1}});
+            cellules[positionAbsolue]= {Cellule(Vecteur(cellx, celly,cellz), Vecteur(taillex, tailley, taillez)),std::unordered_map<int, Particule> {{p.getId(), p}}};
         }
     }
 }
@@ -76,7 +76,7 @@ void Univers::display_particules(){
 void Univers::display_cellules(){
     for (auto it = cellules.begin(); it != cellules.cend(); ++it) {
         std::cout << "Cellule position " << (*it).first << std::endl;
-        std::cout << "Vec pos" << (*it).second.first.getPosition() <<"number of particules = " << (*it).second.second << std::endl;
+        std::cout << "Vec pos" << (*it).second.first.getPosition() << std::endl;
     }
 }
 
@@ -223,10 +223,10 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
         // Si les cellules sont différentes, il va falloir décrémenter le nombre de particules de l'ancienne cellule
         auto it = cellules.find(key_old_cellule);
         if (it != cellules.end()) {
-            it->second.second--;
+            it->second.second.erase(p.getId());
             // cellules[key_old_cellule].second -= 1;
             // On verifie maintenant qu'il y ait encore des particules dans l'ancienne cellule, sinon on la supprime
-            if (it->second.second == 0) {
+            if (it->second.second.begin() == it->second.second.end()) { //vérifie que la liste de particule d'une cellule est vide
                 // cellules.erase(key_old_cellule);
                 cellules.erase(it);
             }
@@ -237,14 +237,14 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
         if (ite != cellules.end()) {
             // Si la cellule existe déjà dans le map, on n'a qu'à incrémenter le compteur
             // cellules[key_new_cellule].second += 1;
-            ite->second.second++;
+            ite->second.second[p.getId()]=p;
         } else {
             // Si la cellule n'existe pas encore dans le map il faut la créer
             // Taille de la cellule dans chaque direction de l'espace
             int taillex = floor(ld.getX()/nc.getX());
             int tailley = floor(ld.getY()/nc.getY());
             int taillez = floor(ld.getZ()/nc.getZ());
-            cellules.insert({key_new_cellule, {Cellule(new_cellule, Vecteur(taillex, tailley, taillez)), 1}});
+            cellules.insert({key_new_cellule, {Cellule(new_cellule, Vecteur(taillex, tailley, taillez)), std::unordered_map<int, Particule>{{p.getId(), p}}}});
         }
     }
     // Si on est par rentré dans le if c'est que la particule est toujours dans la même cellule même après son mouvement donc on ne fait rien

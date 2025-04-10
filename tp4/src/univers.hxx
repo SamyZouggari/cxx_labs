@@ -18,12 +18,12 @@ class Univers {
         // La clefs : Linéarison des coordonnées de la cellule
         // la valeurs : la cellule
         std::unordered_map<int, std::pair<Cellule, std::unordered_map<int,Particule>>> cellules;
-        Particule* particules; // Il nous faut quand même stocker l'ensemble des particules pour des questions de facilité
+        std::vector<Particule> particules; // Il nous faut quand même stocker l'ensemble des particules pour des questions de facilité
 
     public:
         Univers(int dim, int nbParticules, Vecteur ld, float rcut);
         Cellule getCellule(const Vecteur &p) const;
-        Particule* get_particules() const;
+        std::vector<Particule> get_particules() const;
         int getNbParticules() const;
         std::unordered_map<int, std::pair<Cellule, std::unordered_map<int,Particule>>> getCellules() const;
         std::vector<Cellule> getCellulesVoisines(const Cellule &c) const;
@@ -32,11 +32,12 @@ class Univers {
         void display_particules();
         void display_cellules();
         void display_univers();
-        ~Univers();
         std::vector<Vecteur> calcul_forces(float epsilon, float sigma);
         bool est_voisine(const Particule &p1,const Particule &p2) const;
         void stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma, bool affichage);
         // std::vector<Vecteur> posVoisines(Vecteur);
         void check_part(const Particule& p, const Vecteur& v);
+        std::vector<int> get_voisines(Cellule &c);
+        bool Univers::est_voisine(const Cellule& cell1, const Cellule& cell2) const;
 };
 

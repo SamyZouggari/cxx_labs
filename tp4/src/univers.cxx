@@ -89,6 +89,12 @@ void Univers::display_cellules(){
     for (auto it = cellules.begin(); it != cellules.cend(); ++it) {
         std::cout << "Cellule position " << (*it).first << std::endl;
         std::cout << "Vec pos" << (*it).second.first.getPosition() << std::endl;
+        
+        std::unordered_map<int,Particule> part_contained = (*it).second.second;
+        // Boucle qui va boucler sur les particules d'une cellule afin de les afficher
+        for (auto it2 = part_contained.begin(); it2 != part_contained.cend(); ++it2){
+            std::cout << "Contient particules num : " << (*it2).first << std::endl;
+        }
     }
 }
 
@@ -116,7 +122,8 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
             y = (p.getPosition()[1] + (p.getVitesse()[1] + (0.5/p.getMasse())*(*it).getY()*dt)*dt);
             z = (p.getPosition()[2] + (p.getVitesse()[2] + (0.5/p.getMasse())*(*it).getZ()*dt)*dt);
             Vecteur v = Vecteur (x,y,z);
-            //ICI
+            // ICI on met à jour le map en fonction des nouvelles positions des particules 
+            check_part(p, v);
             p.setPosition(v);
             std::advance(it,1);
         }
@@ -174,7 +181,7 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
         }
         forces.push_back(sommeForce_i);
     }
-    display_particules();
+    // display_particules();
     return forces;
 }
 

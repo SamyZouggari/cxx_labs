@@ -7,7 +7,7 @@
 
 
 int main(){
-    Univers u = Univers(3, 10, Vecteur(5,5,5), 2.5);
+    Univers u = Univers(3, 2, Vecteur(5,5,5), 2.5);
     std::cout << "Création des particules dans l'univers" << std::endl;
     int epsilon = 1;
     int sigma = 1;
@@ -17,8 +17,8 @@ int main(){
     std::cout << "\nAffichage des cellules découpant l'univers" << std::endl;
     u.display_cellules();
     std::vector<Vecteur> f_old = u.calcul_forces(epsilon, sigma);
-    u.stromer_verlet(f_old, 0.15,10,1,1,true);
-    u.display_particules();
+    // u.stromer_verlet(f_old, 0.15,10,1,1,true);
+    // u.display_particules();
     return 1;
 }
 

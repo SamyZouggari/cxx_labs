@@ -13,7 +13,6 @@ Univers::Univers(int dim, int nbParticules, Vecteur ld, float rcut):
         nc = Vecteur(floor(ld[0]/rcut), floor(ld[1]/rcut), floor(ld[2]/rcut));
         //Allocation de l'espace pour stocker les particules
         //particules = (Particule*) malloc(nbParticules * sizeof(Particule));
-        particules = new Particule[nbParticules];
     }
 
 int Univers::getNbParticules() const{
@@ -24,7 +23,7 @@ std::unordered_map<int, std::pair<Cellule, std::unordered_map<int,Particule>>> U
     return cellules;
 }
 
-Particule* Univers::get_particules() const{
+std::vector<Particule> Univers::get_particules() const{
     return particules;
 }
 
@@ -98,10 +97,6 @@ void Univers::display_cellules(){
     }
 }
 
-Univers::~Univers() {
-    delete [] particules;
-}
-
 void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma, bool affichage){
     std::vector<Vecteur> F = calcul_forces(epsilon,sigma);
     
@@ -157,32 +152,111 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
     float propy;
     float propz;
     float sumr;
-    for(int i = 0 ; i<nbParticules; i++){
-        Particule& p1= particules[i];
-        Vecteur sommeForce_i = Vecteur(0,0,0);
-        for(int j = 0 ; j<nbParticules; j++){
-            Vecteur force_i_j= Vecteur(0,0,0);
-            Particule& p2 = particules[j];
-            if(p1.getId() != p2.getId() && est_voisine(p1,p2)){
-                float dist = p1.calculateDistance(p2);
-                r = p1.getPosition()-p2.getPosition();
-                sumr = r.getX()+ r.getY()+ r.getZ();
-                propx = r.getX()/sumr;
-                propy = r.getY()/sumr;
-                propz = r.getZ()/sumr;
-                //if(dist>1e-5){ // je l'ai mis au tp2 car j'avais des nan quand la distance etait trop petite
-                if(dist>1e-5){
-                    float force_scalaire = (1/dist * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
-                    force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
+    std::vector<int> cellules_voisines;
+    Cellule cellule_courante;
+    Vecteur sommeForce_i = Vecteur(0,0,0);
+    for(Particule &p1: particules){
+        int cellx = floor(p1.getPosition().getX() / rcut);
+        int celly = floor(p1.getPosition().getY() / rcut);
+        int cellz = floor(p1.getPosition().getY() / rcut);
+        cellule_courante = getCellule(Vecteur(cellx, celly, cellz));
+        cellules_voisines = get_voisines(cellule_courante);
+        for(int &hash_cellule : cellules_voisines){
+            for(auto it = cellules[hash_cellule].second.begin(); it != cellules[hash_cellule].second.end() ; it++){
+                Particule &p2 = it->second;
+                Vecteur force_i_j= Vecteur(0,0,0);
+                if(p1.getId() != p2.getId()){
+                    float dist = p1.calculateDistance(p2);
+                    r = p1.getPosition()-p2.getPosition();
+                    sumr = r.getX()+ r.getY()+ r.getZ();
+                    propx = r.getX()/sumr;
+                    propy = r.getY()/sumr;
+                    propz = r.getZ()/sumr;
+                    if(dist>1e-5){
+                        float force_scalaire = (1/dist * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
+                        force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
+                    }
                 }
-                //}
+                sommeForce_i+=force_i_j;
             }
-            sommeForce_i+=force_i_j;
         }
         forces.push_back(sommeForce_i);
     }
     // display_particules();
     return forces;
+}
+
+std::vector<int> Univers::get_voisines(Cellule &c){
+    std::vector<int> cellules_voisines;
+    
+    Vecteur pos = c.getPosition();
+
+    std::vector<Vecteur> voisins;
+    int linearization;
+
+    if(dim ==1){
+        voisins = {Vecteur(pos.getX()-1,0,0), Vecteur(pos.getX(),0,0), Vecteur(pos.getX()+1,0,0)};
+    }
+    else if(dim == 2){
+        voisins = {
+            Vecteur(pos.getX()-1, pos.getY()-1, 0),
+            Vecteur(pos.getX()-1, pos.getY(),   0),
+            Vecteur(pos.getX()-1, pos.getY()+1, 0),
+            
+            Vecteur(pos.getX(),   pos.getY()-1, 0),
+            Vecteur(pos.getX(),   pos.getY(),   0),
+            Vecteur(pos.getX(),   pos.getY()+1, 0),
+            
+            Vecteur(pos.getX()+1, pos.getY()-1, 0),
+            Vecteur(pos.getX()+1, pos.getY(),   0),
+            Vecteur(pos.getX()+1, pos.getY()+1, 0)
+        };
+    }
+    else if(dim==3){
+std::vector<Vecteur> voisins = {
+            // z - 1
+            Vecteur(pos.getX()-1, pos.getY()-1, pos.getZ()-1),
+            Vecteur(pos.getX()-1, pos.getY(),   pos.getZ()-1),
+            Vecteur(pos.getX()-1, pos.getY()+1, pos.getZ()-1),
+            Vecteur(pos.getX(),   pos.getY()-1, pos.getZ()-1),
+            Vecteur(pos.getX(),   pos.getY(),   pos.getZ()-1),
+            Vecteur(pos.getX(),   pos.getY()+1, pos.getZ()-1),
+            Vecteur(pos.getX()+1, pos.getY()-1, pos.getZ()-1),
+            Vecteur(pos.getX()+1, pos.getY(),   pos.getZ()-1),
+            Vecteur(pos.getX()+1, pos.getY()+1, pos.getZ()-1),
+
+            // z = 0
+            Vecteur(pos.getX()-1, pos.getY()-1, pos.getZ()),
+            Vecteur(pos.getX()-1, pos.getY(),   pos.getZ()),
+            Vecteur(pos.getX()-1, pos.getY()+1, pos.getZ()),
+            Vecteur(pos.getX(),   pos.getY()-1, pos.getZ()),
+            Vecteur(pos.getX(),   pos.getY(),   pos.getZ()), 
+            Vecteur(pos.getX(),   pos.getY()+1, pos.getZ()),
+            Vecteur(pos.getX()+1, pos.getY()-1, pos.getZ()),
+            Vecteur(pos.getX()+1, pos.getY(),   pos.getZ()),
+            Vecteur(pos.getX()+1, pos.getY()+1, pos.getZ()),
+
+            // z + 1
+            Vecteur(pos.getX()-1, pos.getY()-1, pos.getZ()+1),
+            Vecteur(pos.getX()-1, pos.getY(),   pos.getZ()+1),
+            Vecteur(pos.getX()-1, pos.getY()+1, pos.getZ()+1),
+            Vecteur(pos.getX(),   pos.getY()-1, pos.getZ()+1),
+            Vecteur(pos.getX(),   pos.getY(),   pos.getZ()+1),
+            Vecteur(pos.getX(),   pos.getY()+1, pos.getZ()+1),
+            Vecteur(pos.getX()+1, pos.getY()-1, pos.getZ()+1),
+            Vecteur(pos.getX()+1, pos.getY(),   pos.getZ()+1),
+            Vecteur(pos.getX()+1, pos.getY()+1, pos.getZ()+1)
+        };
+    }
+
+    for(Vecteur &v: voisins){
+            linearization = v.getX()*nc[2]*nc[1] + v.getY()*nc[2] + v.getZ();
+            auto ite = cellules.find(linearization);
+            if(ite!=cellules.end()){
+                cellules_voisines.push_back(linearization);
+            }
+        }
+    return cellules_voisines;
 }
 
 /**
@@ -221,6 +295,27 @@ bool Univers::est_voisine(const Particule& part1, const Particule& part2) const{
     return false;
 }
 
+bool Univers::est_voisine(const Cellule& cell1, const Cellule& cell2) const{
+    // Partant des deux particules il nous faut retrouver la cellule à laquelle elles appartiennt
+    // On retrouve à partir de la particule les coordonnées de sa cellule
+
+    Vecteur posCell1 = cell1.getPosition();
+    Vecteur posCell2 = cell2.getPosition();
+
+    if (dim == 1) {
+        // dans un univers en 1 dimension les voisins sont simplement la cellule elle
+        // même, celle d'avant et celle d'après
+        return (abs(int(posCell1.getX()) - int(posCell2.getX())) <= 1);
+    } else if (dim == 2)
+    {
+        return ((abs(posCell1.getX() - posCell2.getX()) <= 1) && (abs(posCell1.getY() - posCell2.getY() <= 1)));
+    } else if (dim == 3)
+    {
+        /* code */
+        return ( (abs(posCell1.getX() - posCell2.getX()) <= 1) && (abs(posCell1.getY() - posCell2.getY() <= 1)) && (abs(posCell1.getZ() - posCell2.getZ() <= 1)));
+    }
+    return false;
+}
 /**
  * Méthode qui va être appelé une fois qu'on a calculé la nouvelle position d'une
  * particule, et qui va permettre de mettre à jour notre Map de cellule. 

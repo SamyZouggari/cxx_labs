@@ -58,6 +58,16 @@ std::string Particule::getCategorie() const {
     return categorie;
 }
 
+Particule& Particule::operator=(const Particule &other){
+    if (this != &other) {
+        this->position = other.getPosition();
+        this->vitesse = other.getVitesse();
+        this->masse = other.getMasse();
+        this->id = other.getId();
+        this->categorie = other.getCategorie();
+    }
+    return *this;
+}
 // Vecteur Particule::vecteurCylindrique(const Particule &p2) const{
 //     float x = p2.getPosition().getX() - getPosition().getX();
 //     float y = p2.getPosition().getY() - getPosition().getY();

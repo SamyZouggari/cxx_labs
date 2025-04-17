@@ -63,9 +63,9 @@ float &Vecteur::operator[](const int i){
 }
 
 Vecteur &Vecteur::operator=(const Vecteur &other){
-    x = other.getX();
-    y = other.getY();
-    z = other.getZ();
+    this->x = other.getX();
+    this->y = other.getY();
+    this->z = other.getZ();
 
     return *this;
 }

@@ -64,8 +64,7 @@ void Univers::initParticulesRandom(){
         float z = disz(gen);
         Vecteur v = Vecteur(x,y,z);
         Particule p = Particule(v, Vecteur(0.0,0.0,0.0), 1.0,i,"particule n° "+i);
-        // particules.push_back(p);
-        particules[i] = p;
+        particules.push_back(p);
 
         // Après sa creation on va dans le meme temps attribuer une cellule à notre particule fraichement crée
         // Taille de la cellule dans chaque direction de l'espace

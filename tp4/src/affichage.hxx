@@ -8,5 +8,5 @@ class Affichage{
 
     public:
         void create_vtk(std::string filename);
-        Affichage(Univers u);
+        Affichage(Univers &u);
 };

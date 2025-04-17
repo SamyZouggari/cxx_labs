@@ -4,7 +4,7 @@
 
 // classe qui permet de créer les fichier .vtk nécessaires à la visualisation sur Paraview
 
-Affichage::Affichage(Univers u): u(u){};
+Affichage::Affichage(Univers &u): u(u){};
 
 void Affichage::create_vtk(std::string filepath){
     std::ofstream fichier(filepath, std::ios::out | std::ios::trunc);

@@ -1,10 +1,12 @@
+#pragma once
+
 #include"univers.hxx"
 
 class Affichage{
     private:
-    Univers u;
+        Univers u;
 
     public:
-    void create_vtk(std::string filename);
-    Affichage(Univers u);
+        void create_vtk(std::string filename);
+        Affichage(Univers u);
 };

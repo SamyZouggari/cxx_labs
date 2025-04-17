@@ -1,4 +1,5 @@
 #include"univers.hxx"
+#include"particule.hxx"
 #include"affichage.hxx"
 #include<random>
 #include<vector>
@@ -21,6 +22,25 @@ int Univers::getNbParticules() const{
 
 std::unordered_map<int, std::pair<Cellule, std::unordered_map<int,Particule>>> Univers::getCellules() const{
     return cellules;
+}
+
+Cellule Univers::getCellule(const Vecteur &p) const{
+    int cellx = floor(p.getX() / rcut);
+    int celly = floor(p.getY() / rcut);
+    int cellz = floor(p.getZ() / rcut);
+    Vecteur posCell = Vecteur(cellx, celly, cellz);
+    int key_cellule = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
+
+
+    auto it = cellules.find(key_cellule);
+    if(it != cellules.end()){
+        return it->second.first;
+    }
+    else{
+        std::cerr << "Cellule non trouvée" << std::endl;
+        return Cellule(Vecteur(0,0,0), Vecteur(0,0,0));
+    }
+
 }
 
 std::vector<Particule> Univers::get_particules() const{

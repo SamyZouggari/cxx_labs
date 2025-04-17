@@ -38,6 +38,6 @@ class Univers {
         // std::vector<Vecteur> posVoisines(Vecteur);
         void check_part(const Particule& p, const Vecteur& v);
         std::vector<int> get_voisines(Cellule &c);
-        bool Univers::est_voisine(const Cellule& cell1, const Cellule& cell2) const;
+        bool est_voisine(const Cellule& cell1, const Cellule& cell2) const;
 };
 

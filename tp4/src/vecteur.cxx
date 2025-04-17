@@ -55,7 +55,6 @@ float &Vecteur::operator[](const int i){
     else if (i==2) {
         return z;
     }
-
     else {
         std::cerr << "out of range" << std::endl;
         throw std::out_of_range("Index must be between 0 and 2.");

@@ -40,7 +40,6 @@ Cellule Univers::getCellule(const Vecteur &p) const{
         std::cerr << "Cellule non trouvée" << std::endl;
         return Cellule(Vecteur(0,0,0), Vecteur(0,0,0));
     }
-
 }
 
 std::vector<Particule> Univers::get_particules() const{
@@ -78,7 +77,7 @@ void Univers::initParticulesRandom(){
         int cellz = floor(p.getPosition().getZ() / rcut);
 
         //linéarisation du vecteur
-        int positionAbsolue = cellx*nc[2]*nc[1] + celly*nc[2] + cellz;
+        int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
 
         int nb_Cellule=0;
         auto it = cellules.find(positionAbsolue);
@@ -175,10 +174,7 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
     Cellule cellule_courante;
     Vecteur sommeForce_i = Vecteur(0,0,0);
     for(Particule &p1: particules){
-        int cellx = floor(p1.getPosition().getX() / rcut);
-        int celly = floor(p1.getPosition().getY() / rcut);
-        int cellz = floor(p1.getPosition().getY() / rcut);
-        cellule_courante = getCellule(Vecteur(cellx, celly, cellz));
+        cellule_courante = getCellule(Vecteur(p1.getPosition().getX(), p1.getPosition().getY(), p1.getPosition().getZ()));
         cellules_voisines = get_voisines(cellule_courante);
         for(int &hash_cellule : cellules_voisines){
             for(auto it = cellules[hash_cellule].second.begin(); it != cellules[hash_cellule].second.end() ; it++){
@@ -348,7 +344,7 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
     int cellz0 = floor(p.getPosition().getY() / rcut);
 
     Vecteur old_cellule = Vecteur(cellx0,celly0,cellz0);
-    int key_old_cellule = cellx0*nc[2]*nc[1] + celly0*nc[2] + cellz0;
+    int key_old_cellule = cellx0*nc.getZ()*nc.getY() + celly0*nc.getZ() + cellz0;
 
     // On doit calculer la cellule qui contiendra la particule après mouvement
     int cellx1 = floor(v.getX()/rcut);
@@ -356,7 +352,7 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
     int cellz1 = floor(v.getZ()/rcut);
 
     Vecteur new_cellule = Vecteur(cellx1,celly1,cellz1);
-    int key_new_cellule = cellx1*nc[2]*nc[1] + celly1*nc[2] + cellz1;
+    int key_new_cellule = cellx1*nc.getZ()*nc.getY() + celly1*nc.getZ() + cellz1;
 
     //maintenant on regarde si après mouvement la particule aura changé de cellule
     if (old_cellule != new_cellule){

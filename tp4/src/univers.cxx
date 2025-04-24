@@ -138,13 +138,13 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
             y = (p.getPosition()[1] + (p.getVitesse()[1] + (0.5/p.getMasse())*(*it).getY()*dt)*dt);
             z = (p.getPosition()[2] + (p.getVitesse()[2] + (0.5/p.getMasse())*(*it).getZ()*dt)*dt);
 
-            if(x >= ld.getX() || x<=0){
+            if(x > ld.getX() || x<=0){
                 x = p.getPosition()[0];
             }
-            if(y >= ld.getY() || y<=0){
+            if(y > ld.getY() || y<=0){
                 y = p.getPosition()[1];
             }
-            if(z >= ld.getZ() || z<=0){
+            if(z > ld.getZ() || z<=0){
                 z = p.getPosition()[2];
             }
             Vecteur v = Vecteur (x,y,z);
@@ -406,4 +406,21 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
         }
     }
     // Si on est par rentré dans le if c'est que la particule est toujours dans la même cellule même après son mouvement donc on ne fait rien
+}
+
+// On va ajouter les particules dans l'univers comme indiqué dans la simulation
+void Univers::initSimuParticules(Vecteur vit, float mas) {
+    float distInterPart = std::pow(2.0, 1.0/6.0);
+
+    Vecteur initPoint = Vecteur(102.5,40,0); // Ce sont les coordonnées de la particule en haut à gauche du carré rouge
+    Vecteur pos = initPoint;
+    for (int i = 0; i < 40; i++) {
+        for (int j = 0; j < 40; j++) {
+            particules.push_back(Particule(pos,vit, mas, i+j,"particule n° "+(i+j)));
+            float new_x = pos.getX() + distInterPart;
+            pos = Vecteur(new_x, pos.getY(), pos.getZ());
+        }
+        float new_y = pos.getY() + distInterPart;
+        pos = Vecteur(pos.getX(), new_y, pos.getZ());
+    }
 }

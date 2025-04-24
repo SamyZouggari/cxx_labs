@@ -7,6 +7,7 @@
 
 
 int main(){
+    // On crée un univers de test
     Univers u = Univers(3, 2, Vecteur(10,10,10), 2.5);
     std::cout << "Création des particules dans l'univers" << std::endl;
     int epsilon = 1;
@@ -19,6 +20,17 @@ int main(){
     std::vector<Vecteur> f_old = u.calcul_forces(epsilon, sigma);
     u.stromer_verlet(f_old, 5,10,1,1,true);
     u.display_particules();
+
+    // On crée un univers pour la simualation
+    int eps = 5;
+    int mass = 1;
+    int sigm = 1;
+    Vecteur vit = Vecteur(0,10,0);
+    float dt = 0.00005;
+    float rcut = 2.5 * sigm;
+    Univers uni = Univers(3, 8000, Vecteur(250,200,0), 2.5); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
+    std::cout << "Création des particules dans l'univers" << std::endl;
+    
     return 1;
 }
 

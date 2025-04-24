@@ -39,5 +39,7 @@ class Univers {
         void check_part(const Particule& p, const Vecteur& v);
         std::vector<int> get_voisines(Cellule &c);
         bool est_voisine(const Cellule& cell1, const Cellule& cell2) const;
+
+        void initSimuParticules(Vecteur vit);
 };
 

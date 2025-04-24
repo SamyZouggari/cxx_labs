@@ -43,7 +43,7 @@ Vecteur Particule::getVitesse() const{
 }
 
 void Particule::setVitesse(const Vecteur &v){
-    this->position = v;
+    this->vitesse = v;
 }
 
 float Particule::getMasse() const{

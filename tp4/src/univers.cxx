@@ -138,13 +138,13 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
             y = (p.getPosition()[1] + (p.getVitesse()[1] + (0.5/p.getMasse())*(*it).getY()*dt)*dt);
             z = (p.getPosition()[2] + (p.getVitesse()[2] + (0.5/p.getMasse())*(*it).getZ()*dt)*dt);
 
-            if(x >= ld.getX() && x<=0){
+            if(x >= ld.getX() || x<=0){
                 x = p.getPosition()[0];
             }
-            if(y >= ld.getY() && y<=0){
+            if(y >= ld.getY() || y<=0){
                 y = p.getPosition()[1];
             }
-            if(z >= ld.getZ() && z<=0){
+            if(z >= ld.getZ() || z<=0){
                 z = p.getPosition()[2];
             }
             Vecteur v = Vecteur (x,y,z);

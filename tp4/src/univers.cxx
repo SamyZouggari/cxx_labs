@@ -436,6 +436,7 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
             int cellz = floor(p.getPosition().getZ() / rcut);
 
             //linéarisation du vecteur
+            // PROBLEME : quand on met z=0 pour faire un univers en 2 dimension, la linéarisation vaudra toujours 0
             int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
 
             int nb_Cellule=0;
@@ -462,4 +463,48 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
     }
 
     // Maintenant il faut créer les particules du bloc bleu
+    Vecteur start_point = Vecteur(35,120,0);
+    Vecteur cur_pos = start_point;
+    for (int i = 0; i < 40; i++){
+        for (int j = 0; j < 160; j++){
+            Particule p2 = Particule(cur_pos,0, mas, i+j + 1601,"particule n° "+(i+j+1601));
+            particules.push_back(p2);
+
+            // On crée la cellule
+            // Après sa creation on va dans le meme temps attribuer une cellule à notre particule fraichement crée
+            // Taille de la cellule dans chaque direction de l'espace
+            int taillex = floor(ld.getX()/nc.getX());
+            int tailley = floor(ld.getY()/nc.getY());
+            int taillez = floor(ld.getZ()/nc.getZ());
+
+            // Nous permet de savoir où se positionne la cellule dans notre univers
+            int cellx = floor(p2.getPosition().getX() / rcut);
+            int celly = floor(p2.getPosition().getY() / rcut);
+            int cellz = floor(p2.getPosition().getZ() / rcut);
+
+            //linéarisation du vecteur
+            int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
+
+            int nb_Cellule=0;
+            auto it = cellules.find(positionAbsolue);
+            if(it !=cellules.end()){
+                //ne fais rien s'il y a déjà la cellule contenant la particule
+                // Si on a déjà vu cette clef, c'est que le cellule contient déjà une ou plusieurs particules
+                it->second.second[p2.getId()]=p2;
+
+                // Est-ce que c'est vraiment utile qu'une Cellule soit au courant des Particules qu'elle contient ???
+            }
+            else {
+                // Sinon c'est que la cellule ne contient pas encore de particule
+                cellules[positionAbsolue]= {Cellule(Vecteur(cellx, celly,cellz), Vecteur(taillex, tailley, taillez)),std::unordered_map<int, Particule> {{p2.getId(), p2}}};
+            }
+
+            // On se décale pour générer une nouvelle particule
+            float new_x = cur_pos.getX() + distInterPart;
+            cur_pos = Vecteur(new_x, cur_pos.getY(), cur_pos.getZ());
+        }
+        // On a fini une ligne donc on descend pour en commencer une nouvelle
+        float new_y = cur_pos.getY() + distInterPart;
+        cur_pos = Vecteur(start_point.getX(), new_y, cur_pos.getZ());
+    }
 }

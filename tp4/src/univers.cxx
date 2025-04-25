@@ -31,7 +31,8 @@ Cellule Univers::getCellule(const Vecteur &p) const{
     int celly = floor(p.getY() / rcut);
     int cellz = floor(p.getZ() / rcut);
     Vecteur posCell = Vecteur(cellx, celly, cellz);
-    int key_cellule = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
+    int key_cellule = linearisation(posCell, dim);
+    //int key_cellule = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
 
 
     auto it = cellules.find(key_cellule);
@@ -79,7 +80,8 @@ void Univers::initParticulesRandom(){
         int cellz = floor(p.getPosition().getZ() / rcut);
 
         //linéarisation du vecteur
-        int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
+        int positionAbsolue = linearisation(Vecteur(cellx, celly, cellz), dim);
+        //int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
 
         int nb_Cellule=0;
         auto it = cellules.find(positionAbsolue);
@@ -106,8 +108,9 @@ void Univers::display_particules(){
 
 void Univers::display_cellules(){
     for (auto it = cellules.begin(); it != cellules.cend(); ++it) {
-        std::cout << "Cellule position " << (*it).first << std::endl;
-        std::cout << "Vec pos" << (*it).second.first.getPosition() << std::endl;
+        std::cout << "Cellule numéro : " << (*it).first << std::endl;
+
+        std::cout << "Position : " << (*it).second.first.getPosition() << std::endl;
         
         std::unordered_map<int,Particule> part_contained = (*it).second.second;
         // Boucle qui va boucler sur les particules d'une cellule afin de les afficher
@@ -221,78 +224,45 @@ std::vector<int> Univers::get_voisines(Cellule &c){
     
     Vecteur pos = c.getPosition();
 
-    std::vector<Vecteur> voisins;
     int linearization;
 
     if(dim ==1){
-        voisins = {Vecteur(pos.getX()-1,0,0), Vecteur(pos.getX(),0,0), Vecteur(pos.getX()+1,0,0)};
+        for (int i = std::max(0, (int) (pos.getX() - 1)); i <= std::min(pos.getX() + 1, nc[0] - 1); i++) {
+            Vecteur v = Vecteur(i, 0, 0);
+            linearization = linearisation(v, dim);
+            auto ite = cellules.find(linearization);
+            if (ite != cellules.end()){
+                cellules_voisines.push_back(linearization);
+            }
+        }
     }
     else if(dim == 2){
-        voisins = {
-            Vecteur(pos.getX()-1, pos.getY()-1, 0),
-            Vecteur(pos.getX()-1, pos.getY(),   0),
-            Vecteur(pos.getX()-1, pos.getY()+1, 0),
-            
-            Vecteur(pos.getX(),   pos.getY()-1, 0),
-            Vecteur(pos.getX(),   pos.getY(),   0),
-            Vecteur(pos.getX(),   pos.getY()+1, 0),
-            
-            Vecteur(pos.getX()+1, pos.getY()-1, 0),
-            Vecteur(pos.getX()+1, pos.getY(),   0),
-            Vecteur(pos.getX()+1, pos.getY()+1, 0)
-        };
+        for (int i = std::max(0, (int) (pos.getX() - 1)); i <= std::min(pos.getX() + 1, nc[0] - 1); i++) {
+            for (int j = std::max(0, (int) (pos.getY() - 1)); j <= std::min(pos.getY() + 1, nc[1] - 1); j++) {
+                Vecteur v = Vecteur(i, 0, 0);
+                linearization = linearisation(v, dim);
+                auto ite = cellules.find(linearization);
+                if (ite != cellules.end()){
+                    cellules_voisines.push_back(linearization);
+                }
+            }
+        }
     }
     else if(dim==3) {
         for (int i = std::max(0, (int) (pos.getX() - 1)); i <= std::min(pos.getX() + 1, nc[0] - 1); i++) {
             for (int j = std::max(0, (int) (pos.getY() - 1)); j <= std::min(pos.getY() + 1, nc[1] - 1); j++) {
                 for (int k = std::max(0, (int) (pos.getZ() - 1)); k <= std::min(pos.getZ() + 1, nc[2] - 1); k++) {
-                    voisins.push_back(Vecteur(i, j, k));
+                    Vecteur v = Vecteur(i, 0, 0);
+                    linearization = linearisation(v, dim);
+                    auto ite = cellules.find(linearization);
+                    if (ite != cellules.end()){
+                        cellules_voisines.push_back(linearization);
+                    }
                 }
             }
         }
     }
-        // voisins = {
-        //             // z - 1
-        //             Vecteur(pos.getX()-1, pos.getY()-1, pos.getZ()-1),
-        //             Vecteur(pos.getX()-1, pos.getY(),   pos.getZ()-1),
-        //             Vecteur(pos.getX()-1, pos.getY()+1, pos.getZ()-1),
-        //             Vecteur(pos.getX(),   pos.getY()-1, pos.getZ()-1),
-        //             Vecteur(pos.getX(),   pos.getY(),   pos.getZ()-1),
-        //             Vecteur(pos.getX(),   pos.getY()+1, pos.getZ()-1),
-        //             Vecteur(pos.getX()+1, pos.getY()-1, pos.getZ()-1),
-        //             Vecteur(pos.getX()+1, pos.getY(),   pos.getZ()-1),
-        //             Vecteur(pos.getX()+1, pos.getY()+1, pos.getZ()-1),
 
-        //             // z = 0
-        //             Vecteur(pos.getX()-1, pos.getY()-1, pos.getZ()),
-        //             Vecteur(pos.getX()-1, pos.getY(),   pos.getZ()),
-        //             Vecteur(pos.getX()-1, pos.getY()+1, pos.getZ()),
-        //             Vecteur(pos.getX(),   pos.getY()-1, pos.getZ()),
-        //             Vecteur(pos.getX(),   pos.getY(),   pos.getZ()), 
-        //             Vecteur(pos.getX(),   pos.getY()+1, pos.getZ()),
-        //             Vecteur(pos.getX()+1, pos.getY()-1, pos.getZ()),
-        //             Vecteur(pos.getX()+1, pos.getY(),   pos.getZ()),
-        //             Vecteur(pos.getX()+1, pos.getY()+1, pos.getZ()),
-
-        //             // z + 1
-        //             Vecteur(pos.getX()-1, pos.getY()-1, pos.getZ()+1),
-        //             Vecteur(pos.getX()-1, pos.getY(),   pos.getZ()+1),
-        //             Vecteur(pos.getX()-1, pos.getY()+1, pos.getZ()+1),
-        //             Vecteur(pos.getX(),   pos.getY()-1, pos.getZ()+1),
-        //             Vecteur(pos.getX(),   pos.getY(),   pos.getZ()+1),
-        //             Vecteur(pos.getX(),   pos.getY()+1, pos.getZ()+1),
-        //             Vecteur(pos.getX()+1, pos.getY()-1, pos.getZ()+1),
-        //             Vecteur(pos.getX()+1, pos.getY(),   pos.getZ()+1),
-        //             Vecteur(pos.getX()+1, pos.getY()+1, pos.getZ()+1)
-        //         };
-
-    for(Vecteur &v: voisins) {
-        linearization = v.getX() * nc[2] * nc[1] + v.getY() * nc[2] + v.getZ();
-        auto ite = cellules.find(linearization);
-        if (ite != cellules.end()){
-            cellules_voisines.push_back(linearization);
-        }
-    }
     return cellules_voisines;
 }
 
@@ -366,7 +336,9 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
     int cellz0 = floor(p.getPosition().getY() / rcut);
 
     Vecteur old_cellule = Vecteur(cellx0,celly0,cellz0);
-    int key_old_cellule = cellx0*nc.getZ()*nc.getY() + celly0*nc.getZ() + cellz0;
+
+    int key_old_cellule = linearisation(old_cellule, dim);
+    //int key_old_cellule = cellx0*nc.getZ()*nc.getY() + celly0*nc.getZ() + cellz0;
 
     // On doit calculer la cellule qui contiendra la particule après mouvement
     int cellx1 = floor(v.getX()/rcut);
@@ -374,7 +346,9 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
     int cellz1 = floor(v.getZ()/rcut);
 
     Vecteur new_cellule = Vecteur(cellx1,celly1,cellz1);
-    int key_new_cellule = cellx1*nc.getZ()*nc.getY() + celly1*nc.getZ() + cellz1;
+
+    int key_new_cellule = linearisation(new_cellule, dim);
+    //int key_new_cellule = cellx1*nc.getZ()*nc.getY() + celly1*nc.getZ() + cellz1;
 
     //maintenant on regarde si après mouvement la particule aura changé de cellule
     if (old_cellule != new_cellule){
@@ -437,7 +411,8 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
 
             //linéarisation du vecteur
             // PROBLEME : quand on met z=0 pour faire un univers en 2 dimension, la linéarisation vaudra toujours 0
-            int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
+            int positionAbsolue = linearisation(Vecteur(cellx, celly, cellz), dim);
+            //int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
 
             int nb_Cellule=0;
             auto it = cellules.find(positionAbsolue);
@@ -483,7 +458,8 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
             int cellz = floor(p2.getPosition().getZ() / rcut);
 
             //linéarisation du vecteur
-            int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
+            int positionAbsolue = linearisation(Vecteur(cellx, celly, cellz), dim);
+            //int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
 
             int nb_Cellule=0;
             auto it = cellules.find(positionAbsolue);
@@ -507,4 +483,23 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
         float new_y = cur_pos.getY() + distInterPart;
         cur_pos = Vecteur(start_point.getX(), new_y, cur_pos.getZ());
     }
+}
+
+
+/*
+    * Fonction de linéarisation d'un vecteur
+    * @param v le vecteur à linéariser
+    * @param dimension la dimension de l'univers
+    * @return la valeur linéarisée du vecteur
+*/
+int Univers::linearisation(const Vecteur &v, int dimension) const{
+    // On va linéariser le vecteur en fonction de la dimension de l'univers
+    if(dimension == 1)
+        return v.getX();
+    else if(dimension == 2)
+        return v.getX()*nc.getY() + v.getY();
+    else if(dimension == 3)
+        return v.getX()*nc.getZ()*nc.getY() + v.getY()*nc.getZ() + v.getZ();
+
+    return 0;
 }

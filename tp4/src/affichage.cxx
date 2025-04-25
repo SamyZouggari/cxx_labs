@@ -51,23 +51,26 @@ void Affichage::create_vtk(std::string filepath){
     fichier << "\t\t\t\t\t";
     for(const auto &pair : u.getCellules()){
         const Cellule &c = pair.second.first;
-        int nbPoints = c.getIndices().size();
-        for (int i = 0; i < nbPoints; ++i) {
-            fichier << u.linearisation(c.getIndices()[i], 2) << " ";
+        for(const Vecteur &v : c.getIndices()){
+            //std::cout << "Cellule numéro : " << pair.first << std::endl;
+            fichier << u.linearisation(v,2) << " ";
         }
     }
     fichier << std::endl;
     fichier << "\t\t\t\t</DataArray>" << std::endl;
     fichier << "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
-    for(int i = 1 ; i<=u.getCellules().size(); ++i){
+    int nbCells = u.getCellules().size();
+    for(int i = 1 ; i<=nbCells; ++i){
+        std::cout << "Cellule numéro : " << i << std::endl;
         fichier << 4*i << " ";
     }
     fichier << std::endl;
     fichier << "\t\t\t\t</DataArray>" << std::endl;
     fichier << "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
-    for (size_t i = 0; i < u.getCellules().size(); ++i) {
+    for (size_t i = 0; i < nbCells; ++i) {
+        //std::cout << "Cellule numéro : " << i << std::endl;
         fichier << "9 ";
     }
     fichier << std::endl;

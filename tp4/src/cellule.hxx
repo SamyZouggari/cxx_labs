@@ -9,12 +9,11 @@ class Cellule{
     private:
         Vecteur position;
         Vecteur taille;
+        std::vector<Vecteur> indices; //positions des sommets de la cellule
 
     public:
         Cellule(const Vecteur &position, const Vecteur &taille);
         Cellule();
         Vecteur getPosition() const;
-        //void addParticule(const Particule &p);
-        //void addCelluleVoisine(const Cellule &c);
-        //std::vector<Particule> getParticules() const;
+        std::vector<Vecteur> getIndices() const;
 };

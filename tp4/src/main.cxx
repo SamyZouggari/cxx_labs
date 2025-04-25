@@ -2,6 +2,7 @@
 #include"vecteur.hxx"
 #include"cellule.hxx"
 #include"particule.hxx"
+#include"affichage.hxx"
 #include<iostream>
 #include<fstream>
 
@@ -38,6 +39,8 @@ int main(){
     // Affichage des cellules
     uni.display_cellules();
 
+    Affichage aff = Affichage(uni);
+    aff.create_vtk("../simulation/univers.vtk");
     return 1;
 }
 

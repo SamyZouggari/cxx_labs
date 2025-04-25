@@ -394,7 +394,7 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
     for (int i = 0; i < 40; i++) {
         for (int j = 0; j < 40; j++) {
             // on crée la particule
-            Particule p = Particule(pos,vit, mas, (40*i)+j,"particule n° "+(i+j));
+            Particule p = Particule(pos,vit, mas, (40*i)+j,"particule");
             particules.push_back(p);
             
             // On crée la cellule
@@ -442,7 +442,7 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
     Vecteur cur_pos = start_point;
     for (int i = 0; i < 40; i++){
         for (int j = 0; j < 160; j++){
-            Particule p2 = Particule(cur_pos,0, mas, (160*i)+j + 1601,"particule n° "+(i+j+1601));
+            Particule p2 = Particule(cur_pos,0, mas, (160*i)+j + 1601,"particule");
             particules.push_back(p2);
 
             // On crée la cellule

@@ -40,6 +40,6 @@ class Univers {
         std::vector<int> get_voisines(Cellule &c);
         bool est_voisine(const Cellule& cell1, const Cellule& cell2) const;
 
-        void initSimuParticules(Vecteur vit);
+        void initSimuParticules(Vecteur vit, float mas);
 };
 

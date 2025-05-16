@@ -27,7 +27,7 @@ int main(){
     int mass = 1;
     int sigm = 1;
     Vecteur vit = Vecteur(0,10,0);
-    float dt = 0.00005;
+    float dt = 0.005;
     float rcut = 2.5 * sigm;
     Univers uni = Univers(2, 8000, Vecteur(250,200,0), rcut); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
     std::cout << "Création des particules dans l'univers" << std::endl;
@@ -37,10 +37,10 @@ int main(){
     // uni.display_particules();
 
     // Affichage des cellules
-    uni.display_cellules();
-
     Affichage aff = Affichage(uni);
-    aff.create_vtk("../simulation/univers.vtk");
+    aff.create_vtk("../simulation/test.vtu");
+    uni.stromer_verlet(uni.calcul_forces(eps, sigm), dt, 0.01, eps, sigm, true);
+
     return 1;
 }
 

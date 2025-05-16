@@ -22,7 +22,6 @@ void Affichage::create_vtk(std::string filepath){
     fichier << "\t\t\t\t<DataArray name=\"Position\" type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
     for(const Particule & p : u.get_particules()){
-        std::cout << "Particule numéro (vitesse): "<< p.getId() << std::endl;
         fichier << p.getPosition().getX() << " " << p.getPosition().getY() << " " << 0 << " ";
     }
     fichier << std::endl;
@@ -32,7 +31,6 @@ void Affichage::create_vtk(std::string filepath){
     fichier << "\t\t\t\t<DataArray type=\"Float32\" Name=\"Velocity\" NumberOfComponents=\"3\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
     for(const Particule & p : u.get_particules()){
-        std::cout << "Particule numéro (vitesse): "<< p.getId() << std::endl;
         fichier << p.getVitesse().getX() << " " << p.getVitesse().getY() << " " << 0 << " ";
     }
     fichier << std::endl;
@@ -40,7 +38,6 @@ void Affichage::create_vtk(std::string filepath){
     fichier << "\t\t\t\t<DataArray type=\"Float32\" Name=\"Masse\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
     for(const Particule & p : u.get_particules()){
-        std::cout << "Particule numéro (masse): "<< p.getId() << std::endl;
         fichier << p.getMasse() << " " ;
     }
     fichier << std::endl;
@@ -52,7 +49,6 @@ void Affichage::create_vtk(std::string filepath){
     for(const auto &pair : u.getCellules()){
         const Cellule &c = pair.second.first;
         for(const Vecteur &v : c.getIndices()){
-            //std::cout << "Cellule numéro : " << pair.first << std::endl;
             fichier << u.linearisation(v,2) << " ";
         }
     }
@@ -62,7 +58,6 @@ void Affichage::create_vtk(std::string filepath){
     fichier << "\t\t\t\t\t";
     int nbCells = u.getCellules().size();
     for(int i = 1 ; i<=nbCells; ++i){
-        std::cout << "Cellule numéro : " << i << std::endl;
         fichier << 4*i << " ";
     }
     fichier << std::endl;
@@ -70,7 +65,6 @@ void Affichage::create_vtk(std::string filepath){
     fichier << "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
     for (size_t i = 0; i < nbCells; ++i) {
-        //std::cout << "Cellule numéro : " << i << std::endl;
         fichier << "9 ";
     }
     fichier << std::endl;

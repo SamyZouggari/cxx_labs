@@ -137,9 +137,9 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
         for(int i = 0 ; i<nbParticules; i++){
             Particule& p = particules[i];
 
-            x = (p.getPosition()[0] + (p.getVitesse()[0] + (0.5/p.getMasse())*(*it).getX()*dt)*dt);
-            y = (p.getPosition()[1] + (p.getVitesse()[1] + (0.5/p.getMasse())*(*it).getY()*dt)*dt);
-            z = (p.getPosition()[2] + (p.getVitesse()[2] + (0.5/p.getMasse())*(*it).getZ()*dt)*dt);
+            x = p.getPosition()[0] + (p.getVitesse()[0] + (0.5/p.getMasse())*(*it).getX()*dt)*dt;
+            y = p.getPosition()[1] + (p.getVitesse()[1] + (0.5/p.getMasse())*(*it).getY()*dt)*dt;
+            z = p.getPosition()[2] + (p.getVitesse()[2] + (0.5/p.getMasse())*(*it).getZ()*dt)*dt;
 
             if(x > ld.getX() || x<=0){
                 x = p.getPosition()[0];
@@ -173,6 +173,7 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
         if (affichage){
             Affichage affichage = Affichage(*this);
             affichage.create_vtk("../simulation/simu"+std::to_string(counter_file)+".vtu");
+            counter_file++;
         }
     }
     
@@ -183,9 +184,7 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
     std::vector<Vecteur> forces;
     //std::vector<Vecteur> voisins;
     Vecteur r;
-    float propx;
-    float propy;
-    float propz;
+
     float sumr;
     std::vector<int> cellules_voisines;
     Cellule cellule_courante;
@@ -199,13 +198,19 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
                 Particule &p2 = it->second;
                 Vecteur force_i_j= Vecteur(0,0,0);
                 if(p1.getId() != p2.getId()){
+                    float propx=0;
+                    float propy=0;
+                    float propz=0;
                     float dist = p1.calculateDistance(p2);
+                    if(dist > rcut){
+                        continue;
+                    }
                     r = p1.getPosition()-p2.getPosition();
                     sumr = r.getX()+ r.getY()+ r.getZ();
-                    propx = (r.getX()/sumr) *(r.getX()/ std::fabs(r.getX()));
-                    propy = (r.getY()/sumr) *(r.getY()/ std::fabs(r.getY()));
-                    propz = (r.getZ()/sumr) *(r.getZ()/ std::fabs(r.getZ()));
-                    if(dist>1e-5){
+                    propx = (std::fabs(r.getX())/sumr) ;
+                    propy = (std::fabs(r.getY())/sumr);
+                    propz = (std::fabs(r.getZ())/sumr) ; // Histoire d'éviter les divisions par zero
+                    if(dist>1e-8){
                         float force_scalaire = (1/dist * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
                         force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
                     }
@@ -218,6 +223,7 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
     // display_particules();
     return forces;
 }
+
 
 std::vector<int> Univers::get_voisines(Cellule &c){
     std::vector<int> cellules_voisines;
@@ -239,7 +245,7 @@ std::vector<int> Univers::get_voisines(Cellule &c){
     else if(dim == 2){
         for (int i = std::max(0, (int) (pos.getX() - 1)); i <= std::min(pos.getX() + 1, nc[0] - 1); i++) {
             for (int j = std::max(0, (int) (pos.getY() - 1)); j <= std::min(pos.getY() + 1, nc[1] - 1); j++) {
-                Vecteur v = Vecteur(i, 0, 0);
+                Vecteur v = Vecteur(i, j, 0);
                 linearization = linearisation(v, dim);
                 auto ite = cellules.find(linearization);
                 if (ite != cellules.end()){
@@ -252,7 +258,7 @@ std::vector<int> Univers::get_voisines(Cellule &c){
         for (int i = std::max(0, (int) (pos.getX() - 1)); i <= std::min(pos.getX() + 1, nc[0] - 1); i++) {
             for (int j = std::max(0, (int) (pos.getY() - 1)); j <= std::min(pos.getY() + 1, nc[1] - 1); j++) {
                 for (int k = std::max(0, (int) (pos.getZ() - 1)); k <= std::min(pos.getZ() + 1, nc[2] - 1); k++) {
-                    Vecteur v = Vecteur(i, 0, 0);
+                    Vecteur v = Vecteur(i, j, k);
                     linearization = linearisation(v, dim);
                     auto ite = cellules.find(linearization);
                     if (ite != cellules.end()){

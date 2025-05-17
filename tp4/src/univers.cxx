@@ -145,7 +145,7 @@ void Univers::display_cellules(){
  * @param tend : l'instant auquel on veut arrêter la simulation
  * @param epsilon, sigma : paramètres constants caractéristiques de l'univers
 */
-void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma, bool affichage){
+void Univers::stromer_verlet(std::vector<Vecteur> &f_old, float dt, float tend, float epsilon, float sigma, bool affichage){
     std::vector<Vecteur> F = calcul_forces(epsilon,sigma);
     
     float t = 0;
@@ -161,19 +161,22 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
         auto it = F.begin();
         for(int i = 0 ; i<nbParticules; i++){
             Particule& p = particules[i];
+            Vecteur pos = p.getPosition();
+            Vecteur speed = p.getVitesse();
+            float mas = p.getMasse();
 
-            x = p.getPosition()[0] + (p.getVitesse()[0] + (0.5/p.getMasse())*(*it).getX()*dt)*dt;
-            y = p.getPosition()[1] + (p.getVitesse()[1] + (0.5/p.getMasse())*(*it).getY()*dt)*dt;
-            z = p.getPosition()[2] + (p.getVitesse()[2] + (0.5/p.getMasse())*(*it).getZ()*dt)*dt;
+            x = pos[0] + (speed[0] + (0.5/mas)*(*it).getX()*dt)*dt;
+            y = pos[1] + (speed[1] + (0.5/mas)*(*it).getY()*dt)*dt;
+            z = pos[2] + (speed[2] + (0.5/mas)*(*it).getZ()*dt)*dt;
 
             if(x > ld.getX() || x<=0){
-                x = p.getPosition()[0];
+                x = pos[0];
             }
             if(y > ld.getY() || y<=0){
-                y = p.getPosition()[1];
+                y = pos[1];
             }
             if(z > ld.getZ() || z<=0){
-                z = p.getPosition()[2];
+                z = pos[2];
             }
             Vecteur v = Vecteur (x,y,z);
             // ICI on met à jour le map en fonction des nouvelles positions des particules 
@@ -187,9 +190,13 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
         auto itF_old = f_old.begin();
         for(int i = 0 ; i<nbParticules; i++){ 
             Particule& p = particules[i];
-            vx = p.getVitesse()[0] +  dt*(0.5/p.getMasse())*(*itF + *itF_old).getX();
-            vy = p.getVitesse()[1] + dt*(0.5/p.getMasse())*(*itF + *itF_old).getY();
-            vz = p.getVitesse()[2] + dt*(0.5/p.getMasse())*(*itF + *itF_old).getZ();
+
+            float m = p.getMasse();
+            Vecteur speed = p.getVitesse();
+
+            vx = speed[0] +  dt*(0.5/m)*(*itF + *itF_old).getX();
+            vy = speed[1] + dt*(0.5/m)*(*itF + *itF_old).getY();
+            vz = speed[2] + dt*(0.5/m)*(*itF + *itF_old).getZ();
             Vecteur v = Vecteur (vx,vy,vz);
             p.setVitesse(v);
             std::advance(itF,1);
@@ -221,12 +228,18 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
     Vecteur sommeForce_i;
     for(Particule &p1: particules){
         sommeForce_i = Vecteur(0,0,0);
-        cellule_courante = getCellule(Vecteur(p1.getPosition().getX(), p1.getPosition().getY(), p1.getPosition().getZ()));
+
+        Vecteur pos1 = p1.getPosition();
+
+        cellule_courante = getCellule(Vecteur(pos1[0], pos1[1], pos1[2]));
         cellules_voisines = get_voisines(cellule_courante);
         for(int &hash_cellule : cellules_voisines){
             for(auto it = cellules[hash_cellule].second.begin(); it != cellules[hash_cellule].second.end() ; it++){
                 Particule &p2 = it->second;
                 Vecteur force_i_j= Vecteur(0,0,0);
+                
+                Vecteur pos2 = p2.getPosition();
+
                 if(p1.getId() != p2.getId()){
                     float propx=0;
                     float propy=0;
@@ -235,7 +248,7 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
                     if(dist > rcut){
                         continue;
                     }
-                    r = p1.getPosition()-p2.getPosition();
+                    r = pos1-pos2;
                     sumr = r.getX()+ r.getY()+ r.getZ();
                     propx = (std::fabs(r.getX())/sumr) ;
                     propy = (std::fabs(r.getY())/sumr);
@@ -244,13 +257,13 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
                     //     float force_scalaire = (1/dist * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
                     //     force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
                     // }
-                    if (dist > 1e-8 && dist < rcut) {
+                    if (dist > 1e-5 && dist < rcut) {
                         float r2 = dist * dist;
                         float sig2 = (sigma * sigma) / r2;
                         float sig6 = sig2 * sig2 * sig2;
                         float sig12 = sig6 * sig6;
                         float force_mag = 24 * epsilon * (2 * sig12 - sig6) / r2;
-                        Vecteur direction = (p1.getPosition() - p2.getPosition()) * (1.0 / dist);
+                        Vecteur direction = r * (1.0 / dist);
                         force_i_j = direction * force_mag;
                     }
                 }

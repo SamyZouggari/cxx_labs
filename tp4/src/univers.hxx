@@ -34,7 +34,7 @@ class Univers {
         void display_univers();
         std::vector<Vecteur> calcul_forces(float epsilon, float sigma);
         bool est_voisine(const Particule &p1,const Particule &p2) const;
-        void stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma, bool affichage);
+        void stromer_verlet(std::vector<Vecteur> &f_old, float dt, float tend, float epsilon, float sigma, bool affichage);
         // std::vector<Vecteur> posVoisines(Vecteur);
         void check_part(const Particule& p, const Vecteur& v);
         std::vector<int> get_voisines(Cellule &c);

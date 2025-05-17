@@ -16,12 +16,14 @@ void Affichage::create_vtk(std::string filepath){
 
     fichier << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">" << std::endl;
 
+    const auto& particules = u.get_particules();
+
     fichier << "\t<UnstructuredGrid>" << std::endl;
     fichier <<  "\t\t <Piece NumberOfPoints=\"" << u.getNbParticules() << "\" NumberOfCells=\"" << u.getCellules().size() <<"\">" << std::endl;
     fichier << "\t\t\t<Points>" << std::endl;
     fichier << "\t\t\t\t<DataArray name=\"Position\" type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
-    for(const Particule & p : u.get_particules()){
+    for(const Particule & p : particules){
         fichier << p.getPosition().getX() << " " << p.getPosition().getY() << " " << 0 << " ";
     }
     fichier << std::endl;
@@ -30,14 +32,14 @@ void Affichage::create_vtk(std::string filepath){
     fichier << "\t\t\t<PointData Vectors=\"vector\">" << std::endl;
     fichier << "\t\t\t\t<DataArray type=\"Float32\" Name=\"Velocity\" NumberOfComponents=\"3\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
-    for(const Particule & p : u.get_particules()){
+    for(const Particule & p : particules){
         fichier << p.getVitesse().getX() << " " << p.getVitesse().getY() << " " << 0 << " ";
     }
     fichier << std::endl;
     fichier << "\t\t\t\t</DataArray>" << std::endl;
     fichier << "\t\t\t\t<DataArray type=\"Float32\" Name=\"Masse\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
-    for(const Particule & p : u.get_particules()){
+    for(const Particule & p : particules){
         fichier << p.getMasse() << " " ;
     }
     fichier << std::endl;

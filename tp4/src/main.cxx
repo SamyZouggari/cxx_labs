@@ -45,7 +45,8 @@ int main(){
     aff.create_vtk("../simulation/simu0.vtu");
 
     std::cout << "Début du mouvement des particules..." << std::endl;
-    uni.stromer_verlet(uni.calcul_forces(eps, sigm), dt, tend, eps, sigm, true);
+    std::vector<Vecteur> f_old = uni.calcul_forces(eps, sigm);
+    uni.stromer_verlet(f_old, dt, tend, eps, sigm, true);
 
     std::cout << "Fin simulation" << std::endl;
     std::cout << "Tous les fichiers .vtu ont été générés avec succès." << std::endl;

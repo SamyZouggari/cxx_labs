@@ -30,16 +30,52 @@ int main(){
     float dt = 0.005;
     float rcut = 2.5 * sigm;
     Univers uni = Univers(2, 8000, Vecteur(250,200,0), rcut); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
+    float tend = 19.5;
+
     std::cout << "Création des particules dans l'univers" << std::endl;
     uni.initSimuParticules(vit,mass);
+    std::cout << "Particules crées avec succès !" << std::endl;
 
     // Affichage des particules
     // uni.display_particules();
 
     // Affichage des cellules
     Affichage aff = Affichage(uni);
-    aff.create_vtk("../simulation/test.vtu");
-    uni.stromer_verlet(uni.calcul_forces(eps, sigm), dt, 0.01, eps, sigm, true);
+    std::cout << "Génération fichier .vtu " << 1 << "/" << (tend/dt) << std::endl;
+    aff.create_vtk("../simulation/simu0.vtu");
+
+    std::cout << "Début du mouvement des particules..." << std::endl;
+    uni.stromer_verlet(uni.calcul_forces(eps, sigm), dt, tend, eps, sigm, true);
+
+    std::cout << "Fin simulation" << std::endl;
+    std::cout << "Tous les fichiers .vtu ont été générés avec succès." << std::endl;
+    std::cout << "Vous pouvez ouvrir les fichiers présnets dans le dossier /simulation sur paraview"
+
+
+    // // On va créer un univers avec une seule particule sans vitesse et sans force afin de vérifier qu'elle reste bien immobile
+    // int eps = 5;
+    // int mass = 1;
+    // int sigm = 1;
+    // Vecteur vit = Vecteur(0,10,0);
+    // float dt = 0.005;
+    // float rcut = 2.5 * sigm;
+    // Univers uni = Univers(2, 1, Vecteur(250,200,0), rcut); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
+    // std::cout << "Création des particules dans l'univers" << std::endl;
+    // uni.testSimu(vit,mass);
+
+    // // Affichage des particules
+    // uni.display_particules();
+
+    // // Affichage des cellules
+    // uni.display_cellules();
+
+    // // Affichage aff = Affichage(uni);
+    // // aff.create_vtk("../simulation/simu0.vtu");
+    // uni.stromer_verlet(uni.calcul_forces(eps, sigm), dt, 0.05, eps, sigm, true);
+
+    // std::cout << "Apres mouvement : " << std::endl;
+    // uni.display_particules();
+    // uni.display_cellules();
 
     return 1;
 }

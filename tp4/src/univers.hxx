@@ -43,5 +43,7 @@ class Univers {
         void initSimuParticules(Vecteur vit, float mas);
 
         int linearisation(const Vecteur &v, int dimension) const;
+
+        void testSimu(Vecteur vit, float mas);
 };
 

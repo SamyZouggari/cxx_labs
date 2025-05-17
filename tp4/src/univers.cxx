@@ -8,6 +8,13 @@
 #include <set>
 #include <cmath>
 
+/**
+ * Constructeur d'un univers
+ * @param dim correspond à la dimension de l'univers, 1, 2 ou 3
+ * @param nbParticules correspond au nombre de particule qui vont être présnetes dans notre univers
+ * @param ld qui correspond à un vecteur indiquant la taille de l'univers dans les directions x, y et z
+ * @param rcut qui est une valeur caractèristique de l'univers qui va nous permettre d'évaluer les différentes intéractions 
+*/
 Univers::Univers(int dim, int nbParticules, Vecteur ld, float rcut):
     dim(dim), nbParticules(nbParticules), ld(ld), rcut(rcut)
     {
@@ -50,7 +57,9 @@ std::vector<Particule> Univers::get_particules() const{
 }
 
 
-// initialisation des particules
+/**
+ * Fonction qui va nous permettre d'initialiser des particules de manière aléatoires dans notre univers
+*/
 void Univers::initParticulesRandom(){
     Vecteur debut = Vecteur(0,0,0);
     Vecteur fin = ld;
@@ -99,6 +108,10 @@ void Univers::initParticulesRandom(){
     }
 }
 
+/**
+ * Fonction simple permettant d'afficher toutes les particules peuplant un univers, 
+ * à l'aide de leur id et de leur position
+*/
 void Univers::display_particules(){
     for(int i =0 ; i< nbParticules; i++) {
         std::cout << "id = " << particules[i].getId() << std::endl;
@@ -106,6 +119,11 @@ void Univers::display_particules(){
     }
 }
 
+/**
+ * Fonction simple permettant d'afficher les différentes cellules de l'univers. A noté que sont 
+ * affichées uniquement les cellules qui contiennent au moins une particules, car sinon elles ne sont pas stockées.
+ * Affiche aussi les particules présentent dans chaque cellules.
+*/
 void Univers::display_cellules(){
     for (auto it = cellules.begin(); it != cellules.cend(); ++it) {
         std::cout << "Cellule numéro : " << (*it).first << std::endl;
@@ -120,6 +138,13 @@ void Univers::display_cellules(){
     }
 }
 
+/**
+ * Fonction qui va permettrent de mettre en place le mouvement des particules à l'aide de l'algorithme de Stromer Verlet
+ * @param f_old un vecteur qui contient la somme des forces s'appliquant sur chaque particule
+ * @param dt le pas de temps entre deux moiuvement de particules
+ * @param tend : l'instant auquel on veut arrêter la simulation
+ * @param epsilon, sigma : paramètres constants caractéristiques de l'univers
+*/
 void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, float epsilon, float sigma, bool affichage){
     std::vector<Vecteur> F = calcul_forces(epsilon,sigma);
     
@@ -180,11 +205,15 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
 
 }
 
+/**
+ * Fonction qui va calculer la somme des forces qui s'appliquent sur chaque particules
+*/
 std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
     std::vector<Vecteur> forces;
     //std::vector<Vecteur> voisins;
     Vecteur r;
 
+    float distInterPart = std::pow(2.0, 1.0/6.0);
     float sumr;
     std::vector<int> cellules_voisines;
     Cellule cellule_courante;
@@ -210,9 +239,18 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
                     propx = (std::fabs(r.getX())/sumr) ;
                     propy = (std::fabs(r.getY())/sumr);
                     propz = (std::fabs(r.getZ())/sumr) ; // Histoire d'éviter les divisions par zero
-                    if(dist>1e-8){
-                        float force_scalaire = (1/dist * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
-                        force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
+                    // if(dist>1e-8){
+                    //     float force_scalaire = (1/dist * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
+                    //     force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
+                    // }
+                    if (dist > distInterPart && dist < rcut) {
+                        float r2 = dist * dist;
+                        float sig2 = (sigma * sigma) / r2;
+                        float sig6 = sig2 * sig2 * sig2;
+                        float sig12 = sig6 * sig6;
+                        float force_mag = 24 * epsilon * (2 * sig12 - sig6) / r2;
+                        Vecteur direction = (p1.getPosition() - p2.getPosition()) * (1.0 / dist);
+                        force_i_j = direction * force_mag;
                     }
                 }
                 sommeForce_i+=force_i_j;
@@ -224,7 +262,11 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
     return forces;
 }
 
-
+/**
+ * Fonction qui va noius permettre de récupérer les cellules voisine d'une cellule de l'univers
+ * @param c : la cellule dont on veut récupérer les voisines
+ * @return Un vecteur d'entier, ou chaque entier correspond au hash d'une cellule voisine de c
+*/
 std::vector<int> Univers::get_voisines(Cellule &c){
     std::vector<int> cellules_voisines;
     
@@ -308,6 +350,9 @@ bool Univers::est_voisine(const Particule& part1, const Particule& part2) const{
     return false;
 }
 
+/**
+ * Fonction qui vérifie que deux cellules sont bien voisines
+*/
 bool Univers::est_voisine(const Cellule& cell1, const Cellule& cell2) const{
     // Partant des deux particules il nous faut retrouver la cellule à laquelle elles appartiennt
     // On retrouve à partir de la particule les coordonnées de sa cellule
@@ -339,7 +384,7 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
     // On doit trouver la position de la cellule qui contient p
     int cellx0 = floor(p.getPosition().getX() / rcut);
     int celly0 = floor(p.getPosition().getY() / rcut);
-    int cellz0 = floor(p.getPosition().getY() / rcut);
+    int cellz0 = floor(p.getPosition().getZ() / rcut);
 
     Vecteur old_cellule = Vecteur(cellx0,celly0,cellz0);
 
@@ -389,7 +434,9 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
 }
 
 /**
- * Une foction qui va ajouter et placer les particules convenablement dans l'univers
+ * Une fonction qui va ajouter et placer les particules convenablement dans l'univers, comme le veut la simulation
+ * @param vit : un vecteur vitesse correspondant à la vitesse des particules dans chaque direction de l'espace
+ * @param mas : la masse de chaque particule
 */
 void Univers::initSimuParticules(Vecteur vit, float mas) {
     float distInterPart = std::pow(2.0, 1.0/6.0);
@@ -492,7 +539,7 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
 }
 
 
-/*
+/**
     * Fonction de linéarisation d'un vecteur
     * @param v le vecteur à linéariser
     * @param dimension la dimension de l'univers
@@ -508,4 +555,50 @@ int Univers::linearisation(const Vecteur &v, int dimension) const{
         return v.getX()*nc.getZ()*nc.getY() + v.getY()*nc.getZ() + v.getZ();
 
     return 0;
+}
+
+/**
+ * Fonction qui va nous permettre de générer un univers avec beaucoup moins de particules, afin de
+ * détecter à quel moment notre calcule de force n'est pas bon
+*/
+void Univers::testSimu(Vecteur vit, float mas) {
+    // ans un premier temps on va va ajouter qu'une seule particule sans aucune force afin de voir si elle reste bien immobile
+    float distInterPart = std::pow(2.0, 1.0/6.0);
+
+    Vecteur initPoint = Vecteur(102.5,40,0); // Ce sont les coordonnées de la particule en haut à gauche du carré rouge
+    Vecteur pos = initPoint;
+
+    Particule p = Particule(pos,vit, mas, 0,"particule");
+    particules.push_back(p);
+    
+    // On crée la cellule
+    // Après sa creation on va dans le meme temps attribuer une cellule à notre particule fraichement crée
+    // Taille de la cellule dans chaque direction de l'espace
+    int taillex = floor(ld.getX()/nc.getX());
+    int tailley = floor(ld.getY()/nc.getY());
+    int taillez = floor(ld.getZ()/nc.getZ());
+
+    // Nous permet de savoir où se positionne la cellule dans notre univers
+    int cellx = floor(p.getPosition().getX() / rcut);
+    int celly = floor(p.getPosition().getY() / rcut);
+    int cellz = floor(p.getPosition().getZ() / rcut);
+
+    //linéarisation du vecteur
+    // PROBLEME : quand on met z=0 pour faire un univers en 2 dimension, la linéarisation vaudra toujours 0
+    int positionAbsolue = linearisation(Vecteur(cellx, celly, cellz), dim);
+    //int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
+
+    int nb_Cellule=0;
+    auto it = cellules.find(positionAbsolue);
+    if(it !=cellules.end()){
+        //ne fais rien s'il y a déjà la cellule contenant la particule
+        // Si on a déjà vu cette clef, c'est que le cellule contient déjà une ou plusieurs particules
+        it->second.second[p.getId()]=p;
+
+        // Est-ce que c'est vraiment utile qu'une Cellule soit au courant des Particules qu'elle contient ???
+    }
+    else {
+        // Sinon c'est que la cellule ne contient pas encore de particule
+        cellules[positionAbsolue]= {Cellule(Vecteur(cellx, celly,cellz), Vecteur(taillex, tailley, taillez)),std::unordered_map<int, Particule> {{p.getId(), p}}};
+    }
 }

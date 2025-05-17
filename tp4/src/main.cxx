@@ -30,7 +30,7 @@ int main(){
     float dt = 0.005;
     float rcut = 2.5 * sigm;
     Univers uni = Univers(2, 8000, Vecteur(250,200,0), rcut); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
-    float tend = 19.5;
+    float tend = 15;
 
     std::cout << "Création des particules dans l'univers" << std::endl;
     uni.initSimuParticules(vit,mass);
@@ -49,7 +49,7 @@ int main(){
 
     std::cout << "Fin simulation" << std::endl;
     std::cout << "Tous les fichiers .vtu ont été générés avec succès." << std::endl;
-    std::cout << "Vous pouvez ouvrir les fichiers présnets dans le dossier /simulation sur paraview"
+    std::cout << "Vous pouvez ouvrir les fichiers présnets dans le dossier /simulation sur paraview" << std::endl;
 
 
     // // On va créer un univers avec une seule particule sans vitesse et sans force afin de vérifier qu'elle reste bien immobile

@@ -197,6 +197,7 @@ void Univers::stromer_verlet(std::vector<Vecteur> f_old, float dt, float tend, f
         }
         if (affichage){
             Affichage affichage = Affichage(*this);
+            std::cout << "Génération fichier .vtu " << counter_file + 1 << "/" << (tend/dt) << std::endl; 
             affichage.create_vtk("../simulation/simu"+std::to_string(counter_file)+".vtu");
             counter_file++;
         }
@@ -213,7 +214,7 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
     //std::vector<Vecteur> voisins;
     Vecteur r;
 
-    float distInterPart = std::pow(2.0, 1.0/6.0);
+    // float distInterPart = std::pow(2.0, 1.0/6.0);
     float sumr;
     std::vector<int> cellules_voisines;
     Cellule cellule_courante;
@@ -243,7 +244,7 @@ std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
                     //     float force_scalaire = (1/dist * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
                     //     force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
                     // }
-                    if (dist > distInterPart && dist < rcut) {
+                    if (dist > 1e-8 && dist < rcut) {
                         float r2 = dist * dist;
                         float sig2 = (sigma * sigma) / r2;
                         float sig6 = sig2 * sig2 * sig2;

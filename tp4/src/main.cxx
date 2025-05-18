@@ -4,7 +4,7 @@
 #include"particule.hxx"
 #include"affichage.hxx"
 #include<iostream>
-#include<fstream>
+#include<filesystem>
 
 
 int main(){
@@ -23,14 +23,14 @@ int main(){
     // u.display_particules();
 
     // On crée un univers pour la simualation
-    int eps = 5;
-    int mass = 1;
-    int sigm = 1;
+    double eps = 5;
+    double mass = 1;
+    double sigm = 1;
     Vecteur vit = Vecteur(0,10,0);
-    float dt = 0.005;
-    float rcut = 2.5 * sigm;
+    double dt = 0.00005;
+    double rcut = 2.5 * sigm;
     Univers uni = Univers(2, 8000, Vecteur(250,200,0), rcut); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
-    float tend = 15;
+    double tend = 19.5;
 
     std::cout << "Création des particules dans l'univers" << std::endl;
     uni.initSimuParticules(vit,mass);
@@ -38,7 +38,16 @@ int main(){
 
     // Affichage des particules
     // uni.display_particules();
-
+    std::string path = "../simulation";
+    if (!std::filesystem::exists(path)) {
+        if (std::filesystem::create_directory(path)) {
+            std::cout << "Dossier '" << path << "' créé avec succès." << std::endl;
+        } else {
+            std::cerr << "Erreur lors de la création du dossier." << std::endl;
+        }
+    } else {
+        std::cout << "Le dossier existe déjà." << std::endl;
+    }
     // Affichage des cellules
     Affichage aff = Affichage(uni);
     std::cout << "Génération fichier .vtu " << 1 << "/" << (tend/dt) << std::endl;

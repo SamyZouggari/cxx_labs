@@ -12,7 +12,7 @@ class Univers {
         int nbParticules;
         int dim;
         Vecteur ld; // Taille de l'univers dans chaque direction de l'espace
-        float rcut;
+        double rcut;
         Vecteur nc; // Nombre de cellules dans chaque direction de l'espace
         // Un dictionnaire pour stocker les cellules de notre univers
         // La clefs : Linéarison des coordonnées de la cellule
@@ -21,7 +21,7 @@ class Univers {
         std::vector<Particule> particules; // Il nous faut quand même stocker l'ensemble des particules pour des questions de facilité
 
     public:
-        Univers(int dim, int nbParticules, Vecteur ld, float rcut);
+        Univers(int dim, int nbParticules, Vecteur ld, double rcut);
         Cellule getCellule(const Vecteur &p) const;
         std::vector<Particule> get_particules() const;
         int getNbParticules() const;
@@ -32,18 +32,18 @@ class Univers {
         void display_particules();
         void display_cellules();
         void display_univers();
-        std::vector<Vecteur> calcul_forces(float epsilon, float sigma);
+        std::vector<Vecteur> calcul_forces(double epsilon, double sigma);
         bool est_voisine(const Particule &p1,const Particule &p2) const;
-        void stromer_verlet(std::vector<Vecteur> &f_old, float dt, float tend, float epsilon, float sigma, bool affichage);
+        void stromer_verlet(std::vector<Vecteur> &f_old, double dt, double tend, double epsilon, double sigma, bool affichage);
         // std::vector<Vecteur> posVoisines(Vecteur);
         void check_part(const Particule& p, const Vecteur& v);
         std::vector<int> get_voisines(Cellule &c);
         bool est_voisine(const Cellule& cell1, const Cellule& cell2) const;
 
-        void initSimuParticules(Vecteur vit, float mas);
+        void initSimuParticules(Vecteur vit, double mas);
 
         int linearisation(const Vecteur &v, int dimension) const;
 
-        void testSimu(Vecteur vit, float mas);
+        void testSimu(Vecteur vit, double mas);
 };
 

@@ -11,7 +11,7 @@
 #include<chrono>
 #include<cmath>
 
-Particule::Particule(Vecteur &position, Vecteur vitesse, float masse, int id, std::string categorie):
+Particule::Particule(Vecteur &position, Vecteur vitesse, double masse, int id, std::string categorie):
 masse(masse), id(id), categorie(categorie) {
     this->position = position;
     this->vitesse = vitesse;
@@ -46,11 +46,11 @@ void Particule::setVitesse(const Vecteur &v){
     this->vitesse = v;
 }
 
-float Particule::getMasse() const{
+double Particule::getMasse() const{
     return masse;
 }
 
-float Particule::calculateDistance(Particule other){
+double Particule::calculateDistance(Particule other){
     return (sqrt(pow(position[0]-other.getPosition()[0],2) + pow(position[1]-other.getPosition()[1],2) + pow(position[2] - other.getPosition()[2],2)));
 }
 
@@ -69,12 +69,12 @@ Particule& Particule::operator=(const Particule &other){
     return *this;
 }
 // Vecteur Particule::vecteurCylindrique(const Particule &p2) const{
-//     float x = p2.getPosition().getX() - getPosition().getX();
-//     float y = p2.getPosition().getY() - getPosition().getY();
-//     float z = p2.getPosition().getZ() - getPosition().getZ();
+//     double x = p2.getPosition().getX() - getPosition().getX();
+//     double y = p2.getPosition().getY() - getPosition().getY();
+//     double z = p2.getPosition().getZ() - getPosition().getZ();
 
-//     float r = sqrt(pow(x,2) + pow(y,2));
-//     float theta;
+//     double r = sqrt(pow(x,2) + pow(y,2));
+//     double theta;
 //     if (x!=0){
 //         theta = atan(y/x);
 //     }

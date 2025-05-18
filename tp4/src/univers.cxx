@@ -15,7 +15,7 @@
  * @param ld qui correspond à un vecteur indiquant la taille de l'univers dans les directions x, y et z
  * @param rcut qui est une valeur caractèristique de l'univers qui va nous permettre d'évaluer les différentes intéractions 
 */
-Univers::Univers(int dim, int nbParticules, Vecteur ld, float rcut):
+Univers::Univers(int dim, int nbParticules, Vecteur ld, double rcut):
     dim(dim), nbParticules(nbParticules), ld(ld), rcut(rcut)
     {
         assert(dim >= 1 && dim <= 3 && "Dimension invalide !");
@@ -70,9 +70,9 @@ void Univers::initParticulesRandom(){
     std::uniform_real_distribution<> disz(0, fin.getZ());
     
     for (int i=0 ; i<nbParticules ; i++){
-        float x = disx(gen);
-        float y = disy(gen);
-        float z = disz(gen);
+        double x = disx(gen);
+        double y = disy(gen);
+        double z = disz(gen);
         Vecteur v = Vecteur(x,y,z);
         Particule p = Particule(v, Vecteur(0.0,0.0,0.0), 1.0,i,"particule n° "+i);
         particules.push_back(p);
@@ -145,16 +145,17 @@ void Univers::display_cellules(){
  * @param tend : l'instant auquel on veut arrêter la simulation
  * @param epsilon, sigma : paramètres constants caractéristiques de l'univers
 */
-void Univers::stromer_verlet(std::vector<Vecteur> &f_old, float dt, float tend, float epsilon, float sigma, bool affichage){
+void Univers::stromer_verlet(std::vector<Vecteur> &f_old, double dt, double tend, double epsilon, double sigma, bool affichage){
+
     std::vector<Vecteur> F = calcul_forces(epsilon,sigma);
     
-    float t = 0;
-    float x=0;
-    float y=0;
-    float z=0;
-    float vx=0;
-    float vy=0;
-    float vz=0;
+    double t = 0;
+    double x=0;
+    double y=0;
+    double z=0;
+    double vx=0;
+    double vy=0;
+    double vz=0;
     int counter_file=1; //compteur pour nommer les fichiers vtk
     while (t < tend) {
         t = t + dt;
@@ -163,11 +164,11 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, float dt, float tend, 
             Particule& p = particules[i];
             Vecteur pos = p.getPosition();
             Vecteur speed = p.getVitesse();
-            float mas = p.getMasse();
+            double mas = p.getMasse();
 
-            x = pos[0] + (speed[0] + (0.5/mas)*(*it).getX()*dt)*dt;
-            y = pos[1] + (speed[1] + (0.5/mas)*(*it).getY()*dt)*dt;
-            z = pos[2] + (speed[2] + (0.5/mas)*(*it).getZ()*dt)*dt;
+            x = pos[0] + speed[0] * dt + 0.5 * (*it).getX() / mas * dt * dt;
+            y = pos[1] + speed[1] * dt + 0.5 * (*it).getY() / mas * dt * dt;
+            z = pos[2] + speed[2] * dt + 0.5 * (*it).getZ() / mas * dt * dt;
 
             if(x > ld.getX() || x<=0){
                 x = pos[0];
@@ -191,12 +192,13 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, float dt, float tend, 
         for(int i = 0 ; i<nbParticules; i++){ 
             Particule& p = particules[i];
 
-            float m = p.getMasse();
+            double m = p.getMasse();
             Vecteur speed = p.getVitesse();
 
-            vx = speed[0] +  dt*(0.5/m)*(*itF + *itF_old).getX();
-            vy = speed[1] + dt*(0.5/m)*(*itF + *itF_old).getY();
-            vz = speed[2] + dt*(0.5/m)*(*itF + *itF_old).getZ();
+            Vecteur F_avg = (*itF + *itF_old) * 0.5;
+            vx = speed[0] + (F_avg.getX() / m) * dt;
+            vy = speed[1] + (F_avg.getY() / m) * dt;
+            vz = speed[2] + (F_avg.getZ() / m) * dt;
             Vecteur v = Vecteur (vx,vy,vz);
             p.setVitesse(v);
             std::advance(itF,1);
@@ -208,6 +210,7 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, float dt, float tend, 
             affichage.create_vtk("../simulation/simu"+std::to_string(counter_file)+".vtu");
             counter_file++;
         }
+        f_old= F;
     }
     
 
@@ -216,63 +219,38 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, float dt, float tend, 
 /**
  * Fonction qui va calculer la somme des forces qui s'appliquent sur chaque particules
 */
-std::vector<Vecteur> Univers::calcul_forces(float epsilon, float sigma){
-    std::vector<Vecteur> forces;
-    //std::vector<Vecteur> voisins;
+std::vector<Vecteur> Univers::calcul_forces(double epsilon, double sigma) {
+    std::vector<Vecteur> forces(nbParticules+1, Vecteur(0.0,0.0,0.0));  // forces[i] = F_i
     Vecteur r;
 
-    // float distInterPart = std::pow(2.0, 1.0/6.0);
-    float sumr;
-    std::vector<int> cellules_voisines;
-    Cellule cellule_courante;
-    Vecteur sommeForce_i;
-    for(Particule &p1: particules){
-        sommeForce_i = Vecteur(0,0,0);
-
+    for (Particule &p1 : particules) {
         Vecteur pos1 = p1.getPosition();
+        int id1 = p1.getId();
 
-        cellule_courante = getCellule(Vecteur(pos1[0], pos1[1], pos1[2]));
-        cellules_voisines = get_voisines(cellule_courante);
-        for(int &hash_cellule : cellules_voisines){
-            for(auto it = cellules[hash_cellule].second.begin(); it != cellules[hash_cellule].second.end() ; it++){
-                Particule &p2 = it->second;
-                Vecteur force_i_j= Vecteur(0,0,0);
-                
+        Cellule cellule_courante = getCellule(pos1);
+        std::vector<int> cellules_voisines = get_voisines(cellule_courante);
+
+        for (int &hash_cellule : cellules_voisines) {
+            for (auto &[id2, p2] : cellules[hash_cellule].second) {
+                if (id2 <= id1) continue;  // Pour ne pas traiter chaque paire deux fois
+
                 Vecteur pos2 = p2.getPosition();
+                r = pos2 - pos1;
 
-                if(p1.getId() != p2.getId()){
-                    float propx=0;
-                    float propy=0;
-                    float propz=0;
-                    float dist = p1.calculateDistance(p2);
-                    if(dist > rcut){
-                        continue;
-                    }
-                    r = pos1-pos2;
-                    sumr = r.getX()+ r.getY()+ r.getZ();
-                    propx = (std::fabs(r.getX())/sumr) ;
-                    propy = (std::fabs(r.getY())/sumr);
-                    propz = (std::fabs(r.getZ())/sumr) ; // Histoire d'éviter les divisions par zero
-                    // if(dist>1e-8){
-                    //     float force_scalaire = (1/dist * pow((sigma/dist),6)*(1-2*(pow((sigma/dist),6))))*24*epsilon;
-                    //     force_i_j = Vecteur(force_scalaire*propx, force_scalaire*propy, force_scalaire*propz);
-                    // }
-                    if (dist > 1e-5 && dist < rcut) {
-                        float r2 = dist * dist;
-                        float sig2 = (sigma * sigma) / r2;
-                        float sig6 = sig2 * sig2 * sig2;
-                        float sig12 = sig6 * sig6;
-                        float force_mag = 24 * epsilon * (2 * sig12 - sig6) / r2;
-                        Vecteur direction = r * (1.0 / dist);
-                        force_i_j = direction * force_mag;
-                    }
+                double r2 = r.getX()*r.getX() + r.getY()*r.getY() + r.getZ()*r.getZ();
+                if (r2 < rcut*rcut && r2 > 0.5) {
+                    double sig2 = (sigma * sigma) / r2;
+                    double sig6 = sig2 * sig2 * sig2;
+                    double force_mag = (24 * epsilon * sig6 * (1 - 2 * sig6)) / r2;
+                    Vecteur force = r * force_mag;
+
+                    forces[id1] += force;
+                    forces[id2] -= force;
                 }
-                sommeForce_i+=force_i_j;
             }
         }
-        forces.push_back(sommeForce_i);
     }
-    // display_particules();
+
     return forces;
 }
 
@@ -452,8 +430,8 @@ void Univers::check_part(const Particule& p, const Vecteur& v) {
  * @param vit : un vecteur vitesse correspondant à la vitesse des particules dans chaque direction de l'espace
  * @param mas : la masse de chaque particule
 */
-void Univers::initSimuParticules(Vecteur vit, float mas) {
-    float distInterPart = std::pow(2.0, 1.0/6.0);
+void Univers::initSimuParticules(Vecteur vit, double mas) {
+    double distInterPart = std::pow(2.0, 1.0/6.0);
 
     // Les lignes suivantes permettent de placer les particules du carré rouge
     Vecteur initPoint = Vecteur(102.5,40,0); // Ce sont les coordonnées de la particule en haut à gauche du carré rouge
@@ -496,20 +474,20 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
             }
 
             // On se décale pour générer une nouvelle particule
-            float new_x = pos.getX() + distInterPart;
+            double new_x = pos.getX() + distInterPart;
             pos = Vecteur(new_x, pos.getY(), pos.getZ());
         }
         // On a fini une ligne donc on descend pour en commencer une nouvelle
-        float new_y = pos.getY() + distInterPart;
+        double new_y = pos.getY() + distInterPart;
         pos = Vecteur(initPoint.getX(), new_y, pos.getZ());
     }
 
     // Maintenant il faut créer les particules du bloc bleu
-    Vecteur start_point = Vecteur(35,120,0);
+    Vecteur start_point = Vecteur(35,95,0);
     Vecteur cur_pos = start_point;
     for (int i = 0; i < 40; i++){
         for (int j = 0; j < 160; j++){
-            Particule p2 = Particule(cur_pos,0, mas, (160*i)+j + 1601,"particule");
+            Particule p2 = Particule(cur_pos,Vecteur(), mas, (160*i)+j + 1601,"particule");
             particules.push_back(p2);
 
             // On crée la cellule
@@ -543,11 +521,11 @@ void Univers::initSimuParticules(Vecteur vit, float mas) {
             }
 
             // On se décale pour générer une nouvelle particule
-            float new_x = cur_pos.getX() + distInterPart;
+            double new_x = cur_pos.getX() + distInterPart;
             cur_pos = Vecteur(new_x, cur_pos.getY(), cur_pos.getZ());
         }
         // On a fini une ligne donc on descend pour en commencer une nouvelle
-        float new_y = cur_pos.getY() + distInterPart;
+        double new_y = cur_pos.getY() + distInterPart;
         cur_pos = Vecteur(start_point.getX(), new_y, cur_pos.getZ());
     }
 }
@@ -575,9 +553,9 @@ int Univers::linearisation(const Vecteur &v, int dimension) const{
  * Fonction qui va nous permettre de générer un univers avec beaucoup moins de particules, afin de
  * détecter à quel moment notre calcule de force n'est pas bon
 */
-void Univers::testSimu(Vecteur vit, float mas) {
+void Univers::testSimu(Vecteur vit, double mas) {
     // ans un premier temps on va va ajouter qu'une seule particule sans aucune force afin de voir si elle reste bien immobile
-    float distInterPart = std::pow(2.0, 1.0/6.0);
+    double distInterPart = std::pow(2.0, 1.0/6.0);
 
     Vecteur initPoint = Vecteur(102.5,40,0); // Ce sont les coordonnées de la particule en haut à gauche du carré rouge
     Vecteur pos = initPoint;

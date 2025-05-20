@@ -1,4 +1,4 @@
-#include"particule.hxx"
+#include"../include/particule.hxx"
 #include<math.h>
 
 

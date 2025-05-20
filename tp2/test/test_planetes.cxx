@@ -1,4 +1,4 @@
-#include "particule.hxx"
+#include "../src/particule.hxx"
 #include <vector>
 #include<math.h>
 #include <iostream>

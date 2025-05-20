@@ -3,7 +3,7 @@
 #include"cellule.hxx"
 #include"particule.hxx"
 #include"affichage.hxx"
-#include"limite.hpp"
+#include"limite.hxx"
 #include<iostream>
 #include<filesystem>
 
@@ -30,7 +30,7 @@ int main(){
     Vecteur vit = Vecteur(0,10,0);
     double dt = 0.00005;
     double rcut = 2.5 * sigm;
-    Univers uni = Univers(2, 8000, Vecteur(250,200,0), rcut, LIMITE::ABSORPTION); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
+    Univers uni = Univers(2, 8000, Vecteur(250,200,0), rcut, LIMITE::ABSORPTION, false); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
     double tend = 19.5;
 
     std::cout << "Création des particules dans l'univers" << std::endl;

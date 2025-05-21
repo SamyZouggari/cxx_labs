@@ -158,9 +158,10 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, double dt, double tend
     double vz=0;
     int counter_file=1; //compteur pour nommer les fichiers vtk
     while (t < tend) {
+        std::vector<int> ids_a_supprimer;
         t = t + dt;
         auto it = F.begin();
-        for(int i = 0 ; i<nbParticules; i++){
+        for(int i = 0 ; i<particules.size(); i++){
             Particule& p = particules[i];
             Vecteur pos = p.getPosition();
             Vecteur speed = p.getVitesse();
@@ -175,27 +176,25 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, double dt, double tend
             bool a_supprimer = update_part(p, v);
             //p.setPosition(v);
             std::advance(it,1);
-            if(a_supprimer){
-                int id = p.getId();
-                particules.erase(std::remove_if(particules.begin(), particules.end(), [&](const Particule& part) {
-                    return part.getId() == p.getId();
+            ids_a_supprimer.push_back(p.getId());
+        }
+        for (int id : ids_a_supprimer) {
+            // Supprimer la particule du vecteur
+            particules.erase(std::remove_if(particules.begin(), particules.end(),
+                [&](const Particule& part) {
+                    return part.getId() == id;
                 }), particules.end());
-                int cellx0 = floor(p.getPosition().getX() / rcut);
-                int celly0 = floor(p.getPosition().getY() / rcut);
-                int cellz0 = floor(p.getPosition().getZ() / rcut);
 
-                Vecteur old_cellule = Vecteur(cellx0,celly0,cellz0);
-
-                int key_old_cellule = linearisation(old_cellule, dim);
-                auto it = cellules.find(key_old_cellule);
-                if (it != cellules.end()) {
-                    it->second.second.erase(id);
-                    // cellules[key_old_cellule].second -= 1;
-                    // On verifie maintenant qu'il y ait encore des particules dans l'ancienne cellule, sinon on la supprime
-                    if (it->second.second.begin() == it->second.second.end()) { //vérifie que la liste de particule d'une cellule est vide
-                        // cellules.erase(key_old_cellule);
+            // Supprimer la particule des cellules
+            // On suppose ici que la cellule est connue via son ID => on cherche dans les cellules
+            for (auto it = cellules.begin(); it != cellules.end(); ++it) {
+                auto& map_part = it->second.second;
+                if (map_part.erase(id) > 0) {
+                    // Si la cellule est maintenant vide, on la supprime aussi
+                    if (map_part.empty()) {
                         cellules.erase(it);
                     }
+                    break; // ID trouvé, on peut s’arrêter
                 }
             }
         }
@@ -203,7 +202,7 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, double dt, double tend
         F = calcul_forces(epsilon, sigma);
         auto itF = F.begin();
         auto itF_old = f_old.begin();
-        for(int i = 0 ; i<nbParticules; i++){ 
+        for(int i = 0 ; i<particules.size(); i++){ 
             Particule& p = particules[i];
 
             double m = p.getMasse();

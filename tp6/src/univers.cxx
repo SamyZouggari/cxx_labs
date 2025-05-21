@@ -170,20 +170,34 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, double dt, double tend
             y = pos[1] + speed[1] * dt + 0.5 * (*it).getY() / mas * dt * dt;
             z = pos[2] + speed[2] * dt + 0.5 * (*it).getZ() / mas * dt * dt;
 
-            if(x > ld.getX() || x<=0){
-                x = pos[0];
-            }
-            if(y > ld.getY() || y<=0){
-                y = pos[1];
-            }
-            if(z > ld.getZ() || z<=0){
-                z = pos[2];
-            }
             Vecteur v = Vecteur (x,y,z);
             // ICI on met à jour le map en fonction des nouvelles positions des particules 
-            check_part(p, v);
-            p.setPosition(v);
+            bool a_supprimer = update_part(p, v);
+            //p.setPosition(v);
             std::advance(it,1);
+            if(a_supprimer){
+                int id = p.getId();
+                particules.erase(std::remove_if(particules.begin(), particules.end(), [&](const Particule& part) {
+                    return part.getId() == p.getId();
+                }), particules.end());
+                int cellx0 = floor(p.getPosition().getX() / rcut);
+                int celly0 = floor(p.getPosition().getY() / rcut);
+                int cellz0 = floor(p.getPosition().getZ() / rcut);
+
+                Vecteur old_cellule = Vecteur(cellx0,celly0,cellz0);
+
+                int key_old_cellule = linearisation(old_cellule, dim);
+                auto it = cellules.find(key_old_cellule);
+                if (it != cellules.end()) {
+                    it->second.second.erase(id);
+                    // cellules[key_old_cellule].second -= 1;
+                    // On verifie maintenant qu'il y ait encore des particules dans l'ancienne cellule, sinon on la supprime
+                    if (it->second.second.begin() == it->second.second.end()) { //vérifie que la liste de particule d'une cellule est vide
+                        // cellules.erase(key_old_cellule);
+                        cellules.erase(it);
+                    }
+                }
+            }
         }
         //Calculer les forces F
         F = calcul_forces(epsilon, sigma);
@@ -225,7 +239,11 @@ std::vector<Vecteur> Univers::calcul_forces(double epsilon, double sigma) {
 
     for (Particule &p1 : particules) {
         Vecteur force_mur= Vecteur(0.0,0.0,0.0);
-        Vecteur force_gravite = Vecteur(0.0,p1.getMasse()*9.81,0.0);
+        Vecteur force_gravite= Vecteur(0.0,0.0,0.0);
+        if(gravite){
+            // On applique la force de gravité
+            force_gravite = Vecteur(0.0,-p1.getMasse()*9.81,0.0);
+        }
         if(condition_limite == LIMITE::REFLEXION_POTENTIEL){
             double dist_x_gauche = ld.getX() - p1.getPosition().getX();
             double dist_x_droite = p1.getPosition().getX();
@@ -420,7 +438,7 @@ bool Univers::est_voisine(const Cellule& cell1, const Cellule& cell2) const{
  * @param p la particule avant son mouvement, pour retrouver à quelle cellule elle appartient
  * @param v nouveau vecteur position de la particule p, pour voir dans quelle cellule la particule va bouger
 */
-void Univers::check_part(const Particule& p, Vecteur& v) {
+bool Univers::update_part(Particule& p, Vecteur& v) {
 
 
     // On doit trouver la position de la cellule qui contient p
@@ -435,20 +453,11 @@ void Univers::check_part(const Particule& p, Vecteur& v) {
     // Voir si l'univers absorbe les particules
     if(condition_limite == LIMITE::ABSORPTION){
         if (v.getX() > ld.getX() || v.getY() > ld.getY() || v.getZ() > ld.getZ() || v.getX() < 0 || v.getY() < 0 || v.getZ() < 0) {
-            int id = p.getId();
-            particules.erase(std::remove_if(particules.begin(), particules.end(), [&](const Particule& part) {
-                return part.getId() == p.getId();
-            }), particules.end());
-            auto it = cellules.find(key_old_cellule);
-            if (it != cellules.end()) {
-                it->second.second.erase(id);
-                // cellules[key_old_cellule].second -= 1;
-                // On verifie maintenant qu'il y ait encore des particules dans l'ancienne cellule, sinon on la supprime
-                if (it->second.second.begin() == it->second.second.end()) { //vérifie que la liste de particule d'une cellule est vide
-                    // cellules.erase(key_old_cellule);
-                    cellules.erase(it);
-                }
-            }
+            return true;
+        }
+        else {
+            // Si la particule n'est pas absorbée, on met à jour sa position
+            p.setPosition(v);
         }
     }
 
@@ -461,6 +470,7 @@ void Univers::check_part(const Particule& p, Vecteur& v) {
         v.setX(periodicite(v.getX(), ld.getX()));
         v.setY(periodicite(v.getY(), ld.getY()));
         v.setZ(periodicite(v.getZ(), ld.getZ()));
+        p.setPosition(v);
     }
 
     else if(condition_limite == LIMITE::REFLEXION){
@@ -474,10 +484,11 @@ void Univers::check_part(const Particule& p, Vecteur& v) {
         v.setX(reflect(v.getX(), ld.getX()));
         v.setY(reflect(v.getY(), ld.getY()));
         v.setZ(reflect(v.getZ(), ld.getZ()));
-
+        p.setPosition(v);
     }
-    //int key_old_cellule = cellx0*nc.getZ()*nc.getY() + celly0*nc.getZ() + cellz0;
-
+    else {
+        p.setPosition(v);
+    }
     // On doit calculer la cellule qui contiendra la particule après mouvement
     int cellx1 = floor(v.getX()/rcut);
     int celly1 = floor(v.getY()/rcut);
@@ -517,6 +528,7 @@ void Univers::check_part(const Particule& p, Vecteur& v) {
             cellules.insert({key_new_cellule, {Cellule(new_cellule, Vecteur(taillex, tailley, taillez)), std::unordered_map<int, Particule>{{p.getId(), p}}}});
         }
     }
+    return false;
     // Si on est par rentré dans le if c'est que la particule est toujours dans la même cellule même après son mouvement donc on ne fait rien
 }
 

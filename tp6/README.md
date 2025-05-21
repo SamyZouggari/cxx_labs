@@ -26,7 +26,17 @@ Pour l'ajout du champ gravitationnel, nous avons ajouté un attribut `gravité` 
 
 ### Compilation
 
-Pour compiler, veuillez suivre les instructions suivantes depuis la racine du tp. mkdir build cd build cmake .. make ./test/\*
+Pour compiler, veuillez suivre les instructions suivantes depuis la racine du tp.
+
+mkdir build
+
+cd build
+
+cmake ..
+
+make
+
+./test/\*
 
 Il y a plusieurs éxecutables qui se formeront:
 

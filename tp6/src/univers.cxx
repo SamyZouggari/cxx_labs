@@ -458,10 +458,6 @@ bool Univers::update_part(Particule& p, Vecteur& v) {
             a_supprimer = true;
             return a_supprimer;
         }
-        else {
-            // Si la particule n'est pas absorbée, on met à jour sa position
-            p.setPosition(v);
-        }
     }
 
     else if(condition_limite == LIMITE::PERIODICITE){
@@ -473,20 +469,33 @@ bool Univers::update_part(Particule& p, Vecteur& v) {
         v.setX(periodicite(v.getX(), ld.getX()));
         v.setY(periodicite(v.getY(), ld.getY()));
         v.setZ(periodicite(v.getZ(), ld.getZ()));
-        p.setPosition(v);
     }
 
     else if(condition_limite == LIMITE::REFLEXION){
 
-        auto reflect = [](double coord, double limite) {
-            if (coord > limite) return 2 * limite - coord;
-            else if (coord < 0) return -coord;
-            else return coord;
-        };
+        if (p.getPosition().getX() > ld.getX()) {
+            p.setVitesse(Vecteur(-p.getVitesse().getX(), p.getVitesse().getY(), p.getVitesse().getZ()));
+            v.setX(ld.getX() - (v.getX() - ld.getX()));
+        } else if (p.getPosition().getX() < 0) {
+            p.setVitesse(Vecteur(-p.getVitesse().getX(), p.getVitesse().getY(), p.getVitesse().getZ()));
+            v.setX(-v.getX());
+        }
 
-        v.setX(reflect(v.getX(), ld.getX()));
-        v.setY(reflect(v.getY(), ld.getY()));
-        v.setZ(reflect(v.getZ(), ld.getZ()));
+        if (p.getPosition().getY() > ld.getY()) {
+            p.setVitesse(Vecteur(p.getVitesse().getX(), -p.getVitesse().getY(), p.getVitesse().getZ()));
+            v.setY(ld.getY() - (v.getY() - ld.getY()));
+        } else if (p.getPosition().getY() < 0) {
+            p.setVitesse(Vecteur(p.getVitesse().getX(), -p.getVitesse().getY(), p.getVitesse().getZ()));
+            v.setY(-v.getY());
+        }
+
+        if (p.getPosition().getZ() > ld.getZ()) {
+            p.setVitesse(Vecteur(p.getVitesse().getX(), p.getVitesse().getY(), -p.getVitesse().getZ()));
+            v.setZ(ld.getZ() - (v.getZ() - ld.getZ()));
+        } else if (p.getPosition().getZ() < 0) {
+            p.setVitesse(Vecteur(p.getVitesse().getX(), p.getVitesse().getY(), -p.getVitesse().getZ()));
+            v.setZ(-v.getZ());
+        }
         p.setPosition(v);
     }
     // On doit calculer la cellule qui contiendra la particule après mouvement
@@ -528,7 +537,7 @@ bool Univers::update_part(Particule& p, Vecteur& v) {
             cellules.insert({key_new_cellule, {Cellule(new_cellule, Vecteur(taillex, tailley, taillez)), std::unordered_map<int, Particule>{{p.getId(), p}}}});
         }
     }
-
+    p.setPosition(v);
     return a_supprimer;
     // Si on est par rentré dans le if c'est que la particule est toujours dans la même cellule même après son mouvement donc on ne fait rien
 }
@@ -793,8 +802,43 @@ void Univers::testReflex(Vecteur vit, double mas) {
     // On crée un univers avec une seule particule qui va se déplacer dedans et qui est censée rebondir sur les parois de l'univers
     double distInterPart = std::pow(2.0, 1.0/6.0);
 
-    Vecteur init_point = Vecteur(10.0,10.0,0);
+    Vecteur init_point = Vecteur(5.0,5.0,0);
     Vecteur pos = init_point;
+    // Particule p = Particule(pos,vit, mas, 0,"particule");
+    // particules.push_back(p);
+    
+    // // On crée la cellule
+    // // Après sa creation on va dans le meme temps attribuer une cellule à notre particule fraichement crée
+    // // Taille de la cellule dans chaque direction de l'espace
+    // int taillex = floor(ld.getX()/nc.getX());
+    // int tailley = floor(ld.getY()/nc.getY());
+    // int taillez = floor(ld.getZ()/nc.getZ());
+
+    // // Nous permet de savoir où se positionne la cellule dans notre univers
+    // int cellx = floor(p.getPosition().getX() / rcut);
+    // int celly = floor(p.getPosition().getY() / rcut);
+    // int cellz = floor(p.getPosition().getZ() / rcut);
+
+    // //linéarisation du vecteur
+    // // PROBLEME : quand on met z=0 pour faire un univers en 2 dimension, la linéarisation vaudra toujours 0
+    // int positionAbsolue = linearisation(Vecteur(cellx, celly, cellz), dim);
+    // //int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
+
+    // int nb_Cellule=0;
+    // auto it = cellules.find(positionAbsolue);
+    // if(it !=cellules.end()){
+    //     //ne fais rien s'il y a déjà la cellule contenant la particule
+    //     // Si on a déjà vu cette clef, c'est que le cellule contient déjà une ou plusieurs particules
+    //     it->second.second[p.getId()]=p;
+
+    //     // Est-ce que c'est vraiment utile qu'une Cellule soit au courant des Particules qu'elle contient ???
+    // }
+    // else {
+    //     // Sinon c'est que la cellule ne contient pas encore de particule
+    //     cellules[positionAbsolue]= {Cellule(Vecteur(cellx, celly,cellz), Vecteur(taillex, tailley, taillez)),std::unordered_map<int, Particule> {{p.getId(), p}}};
+    // }
+
+
 
     // On génère un carré de 40 par 40
     for (int i = 0; i < 40; i++) {

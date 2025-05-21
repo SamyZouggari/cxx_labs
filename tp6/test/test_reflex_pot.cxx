@@ -11,7 +11,7 @@ int main(){
     Vecteur vit = Vecteur(10.0,5.0,0);
     double dt = 0.005;
     double rcut = 2.5 * sigm;
-    LIMITE cond_lim{LIMITE::REFLEXION};
+    LIMITE cond_lim{LIMITE::REFLEXION_POTENTIEL};
     Univers uni = Univers(2, 1600, Vecteur(50.0,50.0,0), rcut, cond_lim, false); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
     double tend = 10;
 

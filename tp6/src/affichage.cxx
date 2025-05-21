@@ -40,10 +40,8 @@ void Affichage::create_vtk(std::string filepath){
     fichier << "\t\t\t<Points>" << std::endl;
     fichier << "\t\t\t\t<DataArray name=\"Position\" type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << std::endl;
     fichier << "\t\t\t\t\t";
-    for(const auto& [key, cell_pair] : u.getCellules()){
-        for(const auto& [id, part] : cell_pair.second){
-            fichier << part.getPosition().getX() << " " << part.getPosition().getY() << " " << 0 << " ";
-        }
+    for(Particule &p : u.get_particules()){
+        fichier << p.getPosition().getX() << " " << p.getPosition().getY() << " " << 0 << " ";
     }
     fichier << std::endl;
     fichier << "\t\t\t\t</DataArray>" << std::endl;

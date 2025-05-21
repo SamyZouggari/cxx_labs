@@ -176,7 +176,9 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, double dt, double tend
             bool a_supprimer = update_part(p, v);
             //p.setPosition(v);
             std::advance(it,1);
-            ids_a_supprimer.push_back(p.getId());
+            if(a_supprimer) {
+                ids_a_supprimer.push_back(p.getId());
+            }
         }
         for (int id : ids_a_supprimer) {
             // Supprimer la particule du vecteur
@@ -439,7 +441,7 @@ bool Univers::est_voisine(const Cellule& cell1, const Cellule& cell2) const{
 */
 bool Univers::update_part(Particule& p, Vecteur& v) {
 
-
+    bool a_supprimer = false;
     // On doit trouver la position de la cellule qui contient p
     int cellx0 = floor(p.getPosition().getX() / rcut);
     int celly0 = floor(p.getPosition().getY() / rcut);
@@ -452,7 +454,8 @@ bool Univers::update_part(Particule& p, Vecteur& v) {
     // Voir si l'univers absorbe les particules
     if(condition_limite == LIMITE::ABSORPTION){
         if (v.getX() > ld.getX() || v.getY() > ld.getY() || v.getZ() > ld.getZ() || v.getX() < 0 || v.getY() < 0 || v.getZ() < 0) {
-            return true;
+            a_supprimer = true;
+            return a_supprimer;
         }
         else {
             // Si la particule n'est pas absorbée, on met à jour sa position
@@ -483,9 +486,6 @@ bool Univers::update_part(Particule& p, Vecteur& v) {
         v.setX(reflect(v.getX(), ld.getX()));
         v.setY(reflect(v.getY(), ld.getY()));
         v.setZ(reflect(v.getZ(), ld.getZ()));
-        p.setPosition(v);
-    }
-    else {
         p.setPosition(v);
     }
     // On doit calculer la cellule qui contiendra la particule après mouvement
@@ -527,7 +527,8 @@ bool Univers::update_part(Particule& p, Vecteur& v) {
             cellules.insert({key_new_cellule, {Cellule(new_cellule, Vecteur(taillex, tailley, taillez)), std::unordered_map<int, Particule>{{p.getId(), p}}}});
         }
     }
-    return false;
+
+    return a_supprimer;
     // Si on est par rentré dans le if c'est que la particule est toujours dans la même cellule même après son mouvement donc on ne fait rien
 }
 

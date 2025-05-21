@@ -1,24 +1,11 @@
-#include"univers.hxx"
-#include"particule.hxx"
+#include"../include/univers.hxx"
+#include"../include/vecteur.hxx"
+#include"../include/particule.hxx"
 #include<random>
 #include<vector>
 
-Univers::Univers(int dim, int nbParticules, float deb, float fin) : dim(dim), nbParticules(nbParticules){
-    std::vector<Particule> points;
-    
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(deb, fin);
-
-    for (int i=0 ; i<nbParticules ; i++){
-        float x = dis(gen);
-        float y = dis(gen);
-        float z = dis(gen);
-        Vecteur v = Vecteur(x,y,z);
-        Particule p = Particule(v, Vecteur(1.0,1.0,1.0), 1.0,i,"particule");
-        points.push_back(p);
-    }
-    particules = points;
+Univers::Univers(int dim, int nbParticules) : dim(dim), nbParticules(nbParticules){
+    particules = std::vector<Particule>(nbParticules, Particule(Vecteur(0,0,0), Vecteur(0,0,0), 1.0, 0, "grille"));
 }
 
 void Univers::avance(Particule &p, const Vecteur dir){
@@ -26,19 +13,46 @@ void Univers::avance(Particule &p, const Vecteur dir){
     p.setPosition(new_dir);
 }
 
-std::vector<float> Univers::calcul_forces(){
-    std::vector<float> forces;
-    for(Particule& p1 : particules){
-        float somme = 0;
-        for(Particule& p2 : particules){
-            if(p1.getId() != p2.getId())    {
-                float dist = p1.calculateDistance(p2);
+std::vector<Vecteur> Univers::calcul_forces(){
+    std::vector<Vecteur> forces(particules.size(), Vecteur(0,0,0));
+    for(size_t i = 0; i < particules.size(); ++i){
+        Particule& p1 = particules[i];
+        Vecteur f_total;
+        for(size_t j = i+1; j < particules.size(); ++j){
+            if(i != j){
+                Particule& p2 = particules[j];
+                Vecteur r = p2.getPosition() - p1.getPosition();
+                double dist = r.norme();
                 if(dist>1e-5){
-                    somme += (p1.getMasse()*p2.getMasse())/pow(dist,2);
+                    double force = (p1.getMasse()*p2.getMasse())/(dist*dist*dist);
+                    f_total += r * force;
+                    forces[i] += f_total;
+                    forces[j] -= f_total;
                 }
             }
         }
-        forces.push_back(somme);
+    }
+    return forces;
+}
+
+
+std::vector<Vecteur> Univers::calcul_forces_v2(){
+    std::vector<Vecteur> forces(particules.size(), Vecteur(0,0,0));
+    for(size_t i = 0; i < particules.size(); ++i){
+        Particule& p1 = particules[i];
+        Vecteur f_total;
+        for(size_t j = 0; j < particules.size(); ++j){
+            if(i != j){
+                Particule& p2 = particules[j];
+                Vecteur r = p2.getPosition() - p1.getPosition();
+                double dist = r.norme();
+                if(dist>1e-5){
+                    double force = (p1.getMasse()*p2.getMasse())/(dist*dist*dist);
+                    f_total += r * force;
+                }
+            }
+        }
+        forces[i]= f_total;
     }
     return forces;
 }
@@ -49,45 +63,47 @@ void Univers::setVitesse(const Vecteur &v){
     }
 }
 
-void Univers::display_univers(){
-    for(const Particule &p : particules) {
+void Univers::affiche_univers() const {
+    for(size_t i = 0; i < particules.size(); ++i){
+        const Particule& p = particules[i];
         std::cout << "id = " << p.getId() << std::endl;
         std::cout << "position = " << p.getPosition() << std::endl;
     }
 }
 
-void Univers::stromer_verlet(std::vector<float> f_old, float dt, float tend){
-    std::vector<float> F = calcul_forces();
-    float t = 0;
-    float x=0;
-    float y=0;
-    float z=0;
-    float vx=0;
-    float vy=0;
-    float vz=0;
+void Univers::stormer_verlet(std::vector<Vecteur> &f_old, double dt, double tend){
+    std::vector<Vecteur> F = calcul_forces();
+    double t = 0;
+    double x=0;
+    double y=0;
+    double z=0;
+    double vx=0;
+    double vy=0;
+    double vz=0;
     while (t < tend) {
         t = t + dt;
-        auto it = F.begin();
-        for(Particule& p : particules){ 
-            x = (p.getPosition()[0] + (p.getVitesse()[0] + (0.5/p.getMasse())*(*it)*dt)*dt);
-            y = (p.getPosition()[1] + (p.getVitesse()[1] + (0.5/p.getMasse())*(*it)*dt)*dt);
-            z = (p.getPosition()[2] + (p.getVitesse()[2] + (0.5/p.getMasse())*(*it)*dt)*dt);
+        for(size_t i = 0; i < particules.size(); ++i){
+            Particule& p = particules[i]; 
+            x = (p.getPosition()[0] + (p.getVitesse()[0] + (0.5/p.getMasse())*((F[i])[0])*dt)*dt);
+            y = (p.getPosition()[1] + (p.getVitesse()[1] + (0.5/p.getMasse())*((F[i])[1])*dt)*dt);
+            z = (p.getPosition()[2] + (p.getVitesse()[2] + (0.5/p.getMasse())*((F[i])[2])*dt)*dt);
             Vecteur v = Vecteur (x,y,z);
             p.setPosition(v);
-            std::advance(it,1);
         }
         //Calculer les forces F
         F = calcul_forces();
-        auto itF = F.begin();
-        auto itF_old = f_old.begin();
-        for(Particule& p : particules){
-            vx = p.getVitesse()[0] +  dt*(0.5/p.getMasse())*(*itF + *itF_old);
-            vy = p.getVitesse()[1] + dt*(0.5/p.getMasse())*(*itF + *itF_old);
-            vz = p.getVitesse()[2] + dt*(0.5/p.getMasse())*(*itF + *itF_old);
+        for(size_t i = 0; i < particules.size(); ++i){
+            Particule& p = particules[i];
+            vx = p.getVitesse()[0] +  dt*(0.5/p.getMasse())*(F[i][0] + f_old[i][0]);
+            vy = p.getVitesse()[1] + dt*(0.5/p.getMasse())*(F[i][1] + f_old[i][1]);
+            vz = p.getVitesse()[2] + dt*(0.5/p.getMasse())*(F[i][2] + f_old[i][2]);
             Vecteur v = Vecteur (vx,vy,vz);
             p.setVitesse(v);
-            std::advance(itF,1);
-            std::advance(itF_old,1);
         }
+        f_old = F;
     }
+}
+
+void Univers::ajouterParticule(const Particule &p) {
+    particules.push_back(p);
 }

@@ -206,7 +206,8 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, double dt, double tend
         }
         if (affichage){
             Affichage affichage = Affichage(*this);
-            std::cout << "Génération fichier .vtu " << counter_file + 1 << "/" << (tend/dt) << std::endl; 
+            // std::cout << "Génération fichier .vtu " << counter_file + 1 << "/" << (tend/dt) << std::endl; 
+            std::cout << "\rGénération fichier .vtu " << counter_file + 1 << "/" << static_cast<int>(tend/dt) << std::flush;
             affichage.create_vtk("../simulation/simu"+std::to_string(counter_file)+".vtu");
             counter_file++;
         }
@@ -434,7 +435,7 @@ void Univers::initSimuParticules(Vecteur vit, double mas) {
     double distInterPart = std::pow(2.0, 1.0/6.0);
 
     // Les lignes suivantes permettent de placer les particules du carré rouge
-    Vecteur initPoint = Vecteur(102.5,40,0); // Ce sont les coordonnées de la particule en haut à gauche du carré rouge
+    Vecteur initPoint = Vecteur(102.5,47,0); // Ce sont les coordonnées de la particule en haut à gauche du carré rouge
     Vecteur pos = initPoint;
     for (int i = 0; i < 40; i++) {
         for (int j = 0; j < 40; j++) {

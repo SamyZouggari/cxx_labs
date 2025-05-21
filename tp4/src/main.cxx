@@ -50,13 +50,16 @@ int main(){
     }
     // Affichage des cellules
     Affichage aff = Affichage(uni);
-    std::cout << "Génération fichier .vtu " << 1 << "/" << (tend/dt) << std::endl;
+    // std::cout << "Génération fichier .vtu " << 1 << "/" << (tend/dt) << std::endl;
+    std::cout << "\rGénération fichier .vtu " << 1 << "/" << static_cast<int>(tend/dt) << std::flush;
     aff.create_vtk("../simulation/simu0.vtu");
 
+    std::cout << std::endl;
     std::cout << "Début du mouvement des particules..." << std::endl;
     std::vector<Vecteur> f_old = uni.calcul_forces(eps, sigm);
     uni.stromer_verlet(f_old, dt, tend, eps, sigm, true);
 
+    std::cout << std::endl;
     std::cout << "Fin simulation" << std::endl;
     std::cout << "Tous les fichiers .vtu ont été générés avec succès." << std::endl;
     std::cout << "Vous pouvez ouvrir les fichiers présnets dans le dossier /simulation sur paraview" << std::endl;

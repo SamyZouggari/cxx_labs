@@ -1,4 +1,4 @@
-#include"../src/particule.hxx"
+#include"particule.hxx"
 #include<list>
 #include<random>
 #include<vector>
@@ -83,6 +83,7 @@ int main(){
         creation_particules_set(SetParticules, tailles[i]);
     }
 
+    free(tailles);
     return 0;
 }
 

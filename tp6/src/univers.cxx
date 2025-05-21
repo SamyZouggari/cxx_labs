@@ -220,7 +220,8 @@ void Univers::stromer_verlet(std::vector<Vecteur> &f_old, double dt, double tend
         }
         if (affichage){
             Affichage affichage = Affichage(*this);
-            std::cout << "Génération fichier .vtu " << counter_file + 1 << "/" << (tend/dt) << std::endl; 
+            // std::cout << "Génération fichier .vtu " << counter_file + 1 << "/" << (tend/dt) << std::endl; 
+            std::cout << "\rGénération fichier .vtu " << counter_file + 1 << "/" << static_cast<int>(tend/dt) << std::flush;
             affichage.create_vtk("../simulation/simu"+std::to_string(counter_file)+".vtu");
             counter_file++;
         }
@@ -786,4 +787,60 @@ void Univers::testAbsorption(Vecteur vit, double mas) {
         double new_y = pos.getY() + distInterPart;
         pos = Vecteur(init_point.getX(), new_y, pos.getZ());
     }
+}
+
+void Univers::testReflex(Vecteur vit, double mas) {
+    // On crée un univers avec une seule particule qui va se déplacer dedans et qui est censée rebondir sur les parois de l'univers
+    double distInterPart = std::pow(2.0, 1.0/6.0);
+
+    Vecteur init_point = Vecteur(10.0,10.0,0);
+    Vecteur pos = init_point;
+
+    // On génère un carré de 40 par 40
+    for (int i = 0; i < 40; i++) {
+        for (int j = 0; j < 40; j++) {
+            // on crée la particule
+            Particule p = Particule(pos,vit, mas, (40*i)+j,"particule");
+            particules.push_back(p);
+            
+            // On crée la cellule
+            // Après sa creation on va dans le meme temps attribuer une cellule à notre particule fraichement crée
+            // Taille de la cellule dans chaque direction de l'espace
+            int taillex = floor(ld.getX()/nc.getX());
+            int tailley = floor(ld.getY()/nc.getY());
+            int taillez = floor(ld.getZ()/nc.getZ());
+
+            // Nous permet de savoir où se positionne la cellule dans notre univers
+            int cellx = floor(p.getPosition().getX() / rcut);
+            int celly = floor(p.getPosition().getY() / rcut);
+            int cellz = floor(p.getPosition().getZ() / rcut);
+
+            //linéarisation du vecteur
+            // PROBLEME : quand on met z=0 pour faire un univers en 2 dimension, la linéarisation vaudra toujours 0
+            int positionAbsolue = linearisation(Vecteur(cellx, celly, cellz), dim);
+            //int positionAbsolue = cellx*nc.getZ()*nc.getY() + celly*nc.getZ() + cellz;
+
+            int nb_Cellule=0;
+            auto it = cellules.find(positionAbsolue);
+            if(it !=cellules.end()){
+                //ne fais rien s'il y a déjà la cellule contenant la particule
+                // Si on a déjà vu cette clef, c'est que le cellule contient déjà une ou plusieurs particules
+                it->second.second[p.getId()]=p;
+
+                // Est-ce que c'est vraiment utile qu'une Cellule soit au courant des Particules qu'elle contient ???
+            }
+            else {
+                // Sinon c'est que la cellule ne contient pas encore de particule
+                cellules[positionAbsolue]= {Cellule(Vecteur(cellx, celly,cellz), Vecteur(taillex, tailley, taillez)),std::unordered_map<int, Particule> {{p.getId(), p}}};
+            }
+
+            // On se décale pour générer une nouvelle particule
+            double new_x = pos.getX() + distInterPart;
+            pos = Vecteur(new_x, pos.getY(), pos.getZ());
+        }
+        // On a fini une ligne donc on descend pour en commencer une nouvelle
+        double new_y = pos.getY() + distInterPart;
+        pos = Vecteur(init_point.getX(), new_y, pos.getZ());
+    }
+
 }

@@ -49,5 +49,7 @@ class Univers {
         void testSimu(Vecteur vit, double mas);
 
         void testAbsorption(Vecteur vit, double mas);
+
+        void testReflex(Vecteur vit, double mas);
 };
 

@@ -8,15 +8,16 @@ int main(){
     double eps = 0;
     double mass = 1;
     double sigm = 1;
-    Vecteur vit = Vecteur(10,0,0);
-    double dt = 0.005;
+    Vecteur vit = Vecteur(10.0,5.0,0);
+    double dt = 0.0005;
     double rcut = 2.5 * sigm;
-    LIMITE cond_lim{LIMITE::ABSORPTION};
-    Univers uni = Univers(2, 1600, Vecteur(80.0,80.0,0), rcut, cond_lim, false); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
+    LIMITE cond_lim{LIMITE::REFLEXION};
+    Univers uni = Univers(2, 8000, Vecteur(250.0,200.0,0), rcut, cond_lim, false); // ld par y ne peut pas valoir 40, du coup j'ai mis 200 au pif
     double tend = 10;
 
     std::cout << "Création des particules dans l'univers" << std::endl;
-    uni.testAbsorption(vit, mass);
+    // uni.testReflex(vit, mass);
+    uni.initSimuParticules(vit, mass);
 
     // Affichage des cellules
     Affichage aff = Affichage(uni);
@@ -25,9 +26,11 @@ int main(){
     aff.create_vtk("../simulation/simu0.vtu");
 
     std::cout << "Début du mouvement des particules..." << std::endl;
-    std::vector<Vecteur> f_old(1600, Vecteur(0, 0, 0));
+    // std::vector<Vecteur> f_old(8000, Vecteur(0, 0, 0));
+    std::vector<Vecteur> f_old = uni.calcul_forces(eps, sigm);
     uni.stromer_verlet(f_old, dt, tend, eps, sigm, true);
 
+    std::cout << std::endl;
     std::cout << "Fin simulation" << std::endl;
     std::cout << "Tous les fichiers .vtu ont été générés avec succès." << std::endl;
     std::cout << "Vous pouvez ouvrir les fichiers présnets dans le dossier /simulation sur paraview" << std::endl;
